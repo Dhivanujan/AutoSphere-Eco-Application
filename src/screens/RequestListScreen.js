@@ -5,7 +5,7 @@ import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
 
 export default function RequestListScreen() {
-  const { requests, providerType, setCurrentScreen, setSelectedRequest } = useApp();
+  const { requests, providerType, documents, setCurrentScreen, setSelectedRequest } = useApp();
   const [activeTab, setActiveTab] = useState('Pending'); // Pending, Active, History
 
   // Filter requests by provider type and tab category
@@ -57,7 +57,21 @@ export default function RequestListScreen() {
 
       {/* Requests List */}
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {filteredRequests.length === 0 ? (
+        {documents.status !== 'Approved' ? (
+          <View style={styles.lockContainer}>
+            <Text style={styles.lockIcon}>🔒</Text>
+            <Text style={styles.lockTextTitle}>Verification Required</Text>
+            <Text style={styles.lockTextDesc}>
+              Your account status is currently {documents.status.toUpperCase()}. You will be able to access the customer requests queue once approved.
+            </Text>
+            <TouchableOpacity 
+              style={[globalStyles.btnSecondary, { marginTop: 15 }]}
+              onPress={() => setCurrentScreen('VERIFICATION_STATUS')}
+            >
+              <Text style={globalStyles.btnSecondaryText}>View Verification Status</Text>
+            </TouchableOpacity>
+          </View>
+        ) : filteredRequests.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>📂</Text>
             <Text style={styles.emptyText}>No requests in this tab</Text>
@@ -265,5 +279,31 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.secondary,
     textTransform: 'uppercase',
+  },
+  lockContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    backgroundColor: colors.card,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.danger,
+    marginTop: 20,
+  },
+  lockIcon: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  lockTextTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: colors.secondary,
+    marginBottom: 8,
+  },
+  lockTextDesc: {
+    fontSize: 13,
+    color: colors.textLight,
+    textAlign: 'center',
+    lineHeight: 20,
   }
 });

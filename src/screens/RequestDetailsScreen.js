@@ -11,8 +11,28 @@ export default function RequestDetailsScreen() {
     rejectRequest, 
     startService, 
     completeService, 
+    documents,
     setCurrentScreen 
   } = useApp();
+
+  if (documents.status !== 'Approved') {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
+            <Text style={styles.backBtnText}>← Home</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Job Detail</Text>
+          <View style={{ width: 50 }} />
+        </View>
+        <View style={styles.lockContainer}>
+          <Text style={styles.lockIcon}>🔒</Text>
+          <Text style={styles.lockTextTitle}>Verification Locked</Text>
+          <Text style={styles.lockTextDesc}>You cannot access customer job details until your account is approved.</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!selectedRequest) {
     return (
@@ -500,5 +520,28 @@ const styles = StyleSheet.create({
   fullWidthBtn: {
     width: '100%',
     paddingVertical: 15,
+  },
+  lockContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 30,
+    backgroundColor: colors.background,
+  },
+  lockIcon: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  lockTextTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.secondary,
+    marginBottom: 8,
+  },
+  lockTextDesc: {
+    fontSize: 14,
+    color: colors.textLight,
+    textAlign: 'center',
+    lineHeight: 22,
   }
 });
