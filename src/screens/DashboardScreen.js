@@ -14,13 +14,28 @@ export default function DashboardScreen() {
     earnings, 
     reviews, 
     notifications,
+    documents,
     setCurrentScreen,
     setSelectedRequest
   } = useApp();
 
+  const isBusiness = [
+    'Taxi Company',
+    'Garage',
+    'Service Station',
+    'Spare Parts Seller',
+    'Vehicle Rental',
+    'Bus Operator',
+    'Parking Service',
+    'Car Wash Service'
+  ].includes(providerType);
+
   // Filter requests that are active or pending
   const activeRequests = requests.filter(r => r.type === providerType && (r.status === 'Pending' || r.status === 'Accepted' || r.status === 'In Progress'));
   const pendingRequestsCount = requests.filter(r => r.type === providerType && r.status === 'Pending').length;
+  const activeJobsCount = requests.filter(r => r.type === providerType && (r.status === 'Accepted' || r.status === 'In Progress')).length;
+  const completedJobsCount = requests.filter(r => r.type === providerType && r.status === 'Completed').length;
+  const totalRequestsCount = requests.filter(r => r.type === providerType).length;
   
   // Calculate average rating
   const averageRating = (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1);
@@ -34,59 +49,95 @@ export default function DashboardScreen() {
   };
 
   // 1. Dashboard Widget: Driver Map / Bus Operator
-  const renderDriverWidget = () => (
-    <View style={globalStyles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={globalStyles.cardTitle}>📍 Live Map Area</Text>
-        <Text style={[styles.badgeText, { color: isOnline ? colors.success : colors.danger }]}>
-          ● {isOnline ? 'GPS Active' : 'GPS Offline'}
-        </Text>
+  const renderDriverWidget = () => {
+    let mapTitle = '📍 Live Map Area';
+    let btnText = 'Configure Service Radius';
+    if (['Taxi Driver', 'Taxi Company', 'Bus Operator'].includes(providerType)) {
+      mapTitle = '📍 Live Dispatch Map';
+    } else if (providerType === 'Vehicle Rental') {
+      mapTitle = '📍 Fleet Tracking Map';
+      btnText = 'Configure Rental Area';
+    } else if (providerType === 'Fuel Service') {
+      mapTitle = '📍 Fuel Delivery Logistics Map';
+      btnText = 'Configure Delivery Radius';
+    } else if (providerType === 'Emergency Provider') {
+      mapTitle = '📍 Emergency Assist Dispatch Map';
+      btnText = 'Configure Assist Radius';
+    }
+    
+    return (
+      <View style={globalStyles.card}>
+        <View style={styles.cardHeader}>
+          <Text style={globalStyles.cardTitle}>{mapTitle}</Text>
+          <Text style={[styles.badgeText, { color: isOnline ? colors.success : colors.danger }]}>
+            ● {isOnline ? 'GPS Active' : 'GPS Offline'}
+          </Text>
+        </View>
+        <View style={styles.mapMock}>
+          <Text style={styles.mapIcon}>🗺️</Text>
+          <Text style={styles.mapText}>Simulating live GPS navigation...</Text>
+          <Text style={styles.mapSubtext}>{profile.serviceArea}</Text>
+        </View>
+        <TouchableOpacity 
+          style={[globalStyles.btnSecondary, { marginTop: 12 }]}
+          onPress={() => setCurrentScreen('LOCATION')}
+        >
+          <Text style={globalStyles.btnSecondaryText}>{btnText}</Text>
+        </TouchableOpacity>
       </View>
-      <View style={styles.mapMock}>
-        <Text style={styles.mapIcon}>🗺️</Text>
-        <Text style={styles.mapText}>Simulating live GPS navigation...</Text>
-        <Text style={styles.mapSubtext}>{profile.serviceArea}</Text>
-      </View>
-      <TouchableOpacity 
-        style={[globalStyles.btnSecondary, { marginTop: 12 }]}
-        onPress={() => setCurrentScreen('LOCATION')}
-      >
-        <Text style={globalStyles.btnSecondaryText}>Configure Service Radius</Text>
-      </TouchableOpacity>
-    </View>
-  );
+    );
+  };
 
   // 2. Dashboard Widget: Garage / Service Station appointments
-  const renderGarageWidget = () => (
-    <View style={globalStyles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={globalStyles.cardTitle}>🛠️ Workshop Appointments</Text>
-        <TouchableOpacity onPress={() => setCurrentScreen('REQUEST_LIST')}>
-          <Text style={styles.seeAllLink}>See Queue</Text>
-        </TouchableOpacity>
+  const renderGarageWidget = () => {
+    let widgetTitle = '🛠️ Workshop Appointments';
+    let activeLabel = 'Active Repairs';
+    let queueLabel = 'Bookings Queue';
+    
+    if (providerType === 'Car Wash Service') {
+      widgetTitle = '🧼 Detailing Slots';
+      activeLabel = 'Active Washes';
+      queueLabel = 'Wash Queue';
+    } else if (providerType === 'Parking Service') {
+      widgetTitle = '🅿️ Parking Spaces';
+      activeLabel = 'Occupied Spaces';
+      queueLabel = 'Valet Bookings';
+    }
+    
+    const activeCount = requests.filter(r => r.type === providerType && r.status === 'In Progress').length;
+    const pendingCount = requests.filter(r => r.type === providerType && r.status === 'Pending').length;
+
+    return (
+      <View style={globalStyles.card}>
+        <View style={styles.cardHeader}>
+          <Text style={globalStyles.cardTitle}>{widgetTitle}</Text>
+          <TouchableOpacity onPress={() => setCurrentScreen('REQUEST_LIST')}>
+            <Text style={styles.seeAllLink}>See Queue</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.appointmentBox}>
+          <Text style={styles.appointmentStats}>
+            {activeLabel}: <Text style={{ color: colors.primary }}>{activeCount}</Text>
+          </Text>
+          <Text style={styles.appointmentStats}>
+            {queueLabel}: <Text style={{ color: colors.pending }}>{pendingCount}</Text>
+          </Text>
+        </View>
+        <View style={styles.divider} />
+        <Text style={styles.sectionHeading}>Quick Actions</Text>
+        <View style={styles.quickGrid}>
+          <TouchableOpacity style={styles.gridBtn} onPress={() => setCurrentScreen('AVAILABILITY')}>
+            <Text style={styles.gridIcon}>📅</Text>
+            <Text style={styles.gridText}>Slots</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.gridBtn} onPress={() => setCurrentScreen('CUSTOMER_LIST')}>
+            <Text style={styles.gridIcon}>👤</Text>
+            <Text style={styles.gridText}>Customers</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.appointmentBox}>
-        <Text style={styles.appointmentStats}>
-          Active Repairs: <Text style={{ color: colors.primary }}>{requests.filter(r => r.type === 'Garage' && r.status === 'In Progress').length}</Text>
-        </Text>
-        <Text style={styles.appointmentStats}>
-          Bookings Queue: <Text style={{ color: colors.pending }}>{requests.filter(r => r.type === 'Garage' && r.status === 'Pending').length}</Text>
-        </Text>
-      </View>
-      <View style={styles.divider} />
-      <Text style={styles.sectionHeading}>Quick Actions</Text>
-      <View style={styles.quickGrid}>
-        <TouchableOpacity style={styles.gridBtn} onPress={() => setCurrentScreen('AVAILABILITY')}>
-          <Text style={styles.gridIcon}>📅</Text>
-          <Text style={styles.gridText}>Slots</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.gridBtn} onPress={() => setCurrentScreen('CUSTOMER_LIST')}>
-          <Text style={styles.gridIcon}>👤</Text>
-          <Text style={styles.gridText}>Customers</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  };
 
   // 3. Dashboard Widget: Spare Parts Seller inventory & orders
   const renderSellerWidget = () => (
@@ -109,7 +160,7 @@ export default function DashboardScreen() {
 
       <View style={styles.sellerStatsRow}>
         <View style={styles.sellerStatCard}>
-          <Text style={styles.sellerStatVal}>{requests.filter(r => r.type === 'Spare Parts Seller' && r.status === 'Pending').length}</Text>
+          <Text style={styles.sellerStatVal}>{requests.filter(r => r.type === providerType && r.status === 'Pending').length}</Text>
           <Text style={styles.sellerStatLabel}>New Orders</Text>
         </View>
         <View style={styles.sellerStatCard}>
@@ -126,9 +177,21 @@ export default function DashboardScreen() {
       <View style={styles.customHeader}>
         <View style={styles.userInfo}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {profile.businessName ? profile.businessName.substring(0, 1) : profile.fullName.substring(0, 1)}
-            </Text>
+            {isBusiness ? (
+              profile.businessLogo ? (
+                <Text style={styles.avatarTextIcon}>{profile.businessLogo}</Text>
+              ) : (
+                <Text style={styles.avatarText}>
+                  {profile.businessName ? profile.businessName.substring(0, 1) : profile.fullName.substring(0, 1)}
+                </Text>
+              )
+            ) : (
+              profile.profilePhoto ? (
+                <Text style={styles.avatarTextIcon}>{profile.profilePhoto}</Text>
+              ) : (
+                <Text style={styles.avatarText}>{profile.fullName.substring(0, 1)}</Text>
+              )
+            )}
           </View>
           <View>
             <Text style={styles.userName}>{profile.businessName || profile.fullName}</Text>
@@ -167,68 +230,106 @@ export default function DashboardScreen() {
           <TouchableOpacity style={styles.metricCard} onPress={() => setCurrentScreen('EARNINGS')}>
             <Text style={styles.metricLabel}>Earnings</Text>
             <Text style={styles.metricVal}>${earnings.weekly.toFixed(2)}</Text>
-            <Text style={styles.metricSub}>This week</Text>
+            <Text style={styles.metricSub}>Unsettled</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.metricCard} onPress={() => setCurrentScreen('REQUEST_LIST')}>
-            <Text style={styles.metricLabel}>Requests</Text>
-            <Text style={styles.metricVal}>{activeRequests.length}</Text>
+            <Text style={styles.metricLabel}>Active Jobs</Text>
+            <Text style={styles.metricVal}>{activeJobsCount}</Text>
             <Text style={styles.metricSub}>{pendingRequestsCount} Pending</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.metricCard} onPress={() => setCurrentScreen('EARNINGS')}>
+            <Text style={styles.metricLabel}>Completed</Text>
+            <Text style={styles.metricVal}>{completedJobsCount}</Text>
+            <Text style={styles.metricSub}>All Time</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={[styles.metricsRow, { marginTop: 8 }]}>
+          <TouchableOpacity style={styles.metricCard} onPress={() => setCurrentScreen('REQUEST_LIST')}>
+            <Text style={styles.metricLabel}>Total Requests</Text>
+            <Text style={styles.metricVal}>{totalRequestsCount}</Text>
+            <Text style={styles.metricSub}>Received</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.metricCard} onPress={() => setCurrentScreen('REVIEWS')}>
             <Text style={styles.metricLabel}>Rating</Text>
             <Text style={styles.metricVal}>⭐ {averageRating}</Text>
-            <Text style={styles.metricSub}>{reviews.length} reviews</Text>
+            <Text style={styles.metricSub}>{reviews.length} Reviews</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.metricCard} onPress={() => setCurrentScreen('NOTIFICATIONS')}>
+            <Text style={styles.metricLabel}>Alerts</Text>
+            <Text style={styles.metricVal}>{unreadNotifications}</Text>
+            <Text style={styles.metricSub}>Unread</Text>
           </TouchableOpacity>
         </View>
 
         {/* Dynamic Category Specific Content */}
-        {['Taxi Driver', 'Taxi Company', 'Bus Operator'].includes(providerType) && renderDriverWidget()}
-        {['Garage', 'Service Station', 'Car Wash Service'].includes(providerType) && renderGarageWidget()}
+        {['Taxi Driver', 'Taxi Company', 'Bus Operator', 'Vehicle Rental', 'Fuel Service', 'Emergency Provider'].includes(providerType) && renderDriverWidget()}
+        {['Garage', 'Service Station', 'Car Wash Service', 'Parking Service'].includes(providerType) && renderGarageWidget()}
         {['Spare Parts Seller'].includes(providerType) && renderSellerWidget()}
 
-        {/* Recent Service Requests Card */}
-        <View style={globalStyles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={globalStyles.cardTitle}>📥 Active Job Requests</Text>
-            <TouchableOpacity onPress={() => setCurrentScreen('REQUEST_LIST')}>
-              <Text style={styles.seeAllLink}>View All ({requests.filter(r => r.type === providerType).length})</Text>
+        {/* Verification Lock for Requests */}
+        {documents.status !== 'Approved' ? (
+          <View style={[globalStyles.card, styles.lockCard]}>
+            <Text style={styles.lockIcon}>🔒</Text>
+            <Text style={styles.lockTitle}>Verification Required</Text>
+            <Text style={styles.lockText}>
+              Your account status is currently <Text style={styles.lockStatusText}>{documents.status.toUpperCase()}</Text>.
+              You cannot receive customer requests until your document verification is approved.
+            </Text>
+            <TouchableOpacity 
+              style={[globalStyles.btnSecondary, { marginTop: 15 }]}
+              onPress={() => setCurrentScreen('VERIFICATION_STATUS')}
+            >
+              <Text style={globalStyles.btnSecondaryText}>View Verification Status</Text>
             </TouchableOpacity>
           </View>
-
-          {activeRequests.length === 0 ? (
-            <View style={styles.emptyRequests}>
-              <Text style={styles.emptyIcon}>📭</Text>
-              <Text style={styles.emptyText}>No active or pending requests</Text>
-              <Text style={styles.emptySubtext}>When customers book your service, details will appear here.</Text>
-            </View>
-          ) : (
-            activeRequests.map((req) => (
-              <TouchableOpacity 
-                key={req.id} 
-                style={styles.requestItem}
-                onPress={() => navigateToRequest(req)}
-              >
-                <View style={styles.requestLeft}>
-                  <Text style={styles.reqCustomerName}>{req.customerName}</Text>
-                  <Text style={styles.reqDetails} numberOfLines={1}>{req.serviceDetails}</Text>
-                  <Text style={styles.reqLocation} numberOfLines={1}>📍 {req.pickupLocation}</Text>
-                </View>
-                <View style={styles.requestRight}>
-                  <Text style={styles.reqFare}>${req.fare.toFixed(2)}</Text>
-                  <View style={[
-                    styles.statusIndicator,
-                    req.status === 'Pending' ? styles.indicatorPending : 
-                    req.status === 'Accepted' ? styles.indicatorAccepted : styles.indicatorActive
-                  ]}>
-                    <Text style={styles.indicatorLabel}>{req.status}</Text>
-                  </View>
-                </View>
+        ) : (
+          /* Recent Service Requests Card */
+          <View style={globalStyles.card}>
+            <View style={styles.cardHeader}>
+              <Text style={globalStyles.cardTitle}>📥 Active Job Requests</Text>
+              <TouchableOpacity onPress={() => setCurrentScreen('REQUEST_LIST')}>
+                <Text style={styles.seeAllLink}>View All ({requests.filter(r => r.type === providerType).length})</Text>
               </TouchableOpacity>
-            ))
-          )}
-        </View>
+            </View>
+
+            {activeRequests.length === 0 ? (
+              <View style={styles.emptyRequests}>
+                <Text style={styles.emptyIcon}>📭</Text>
+                <Text style={styles.emptyText}>No active or pending requests</Text>
+                <Text style={styles.emptySubtext}>When customers book your service, details will appear here.</Text>
+              </View>
+            ) : (
+              activeRequests.map((req) => (
+                <TouchableOpacity 
+                  key={req.id} 
+                  style={styles.requestItem}
+                  onPress={() => navigateToRequest(req)}
+                >
+                  <View style={styles.requestLeft}>
+                    <Text style={styles.reqCustomerName}>{req.customerName}</Text>
+                    <Text style={styles.reqDetails} numberOfLines={1}>{req.serviceDetails}</Text>
+                    <Text style={styles.reqLocation} numberOfLines={1}>📍 {req.pickupLocation}</Text>
+                  </View>
+                  <View style={styles.requestRight}>
+                    <Text style={styles.reqFare}>${req.fare.toFixed(2)}</Text>
+                    <View style={[
+                      styles.statusIndicator,
+                      req.status === 'Pending' ? styles.indicatorPending : 
+                      req.status === 'Accepted' ? styles.indicatorAccepted : styles.indicatorActive
+                    ]}>
+                      <Text style={styles.indicatorLabel}>{req.status}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
+        )}
 
         {/* Application Navigation Quick Links Grid */}
         <Text style={styles.navHeader}>Application Management</Text>
@@ -659,5 +760,36 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.secondary,
     textAlign: 'center',
+  },
+  avatarTextIcon: {
+    fontSize: 22,
+  },
+  lockCard: {
+    alignItems: 'center',
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+    backgroundColor: colors.card,
+    borderColor: colors.danger,
+    borderWidth: 1,
+  },
+  lockIcon: {
+    fontSize: 40,
+    marginBottom: 12,
+  },
+  lockTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: colors.secondary,
+    marginBottom: 8,
+  },
+  lockText: {
+    fontSize: 12,
+    color: colors.textLight,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  lockStatusText: {
+    color: colors.danger,
+    fontWeight: '800',
   }
 });

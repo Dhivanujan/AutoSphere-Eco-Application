@@ -5,7 +5,7 @@ import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
 
 export default function ProfileScreen() {
-  const { profile, setProfile, providerType, setCurrentScreen } = useApp();
+  const { profile, setProfile, providerType, setCurrentScreen, uploadProfilePhoto, uploadBusinessLogo } = useApp();
 
   const isBusiness = [
     'Taxi Company',
@@ -58,9 +58,21 @@ export default function ProfileScreen() {
         {/* Banner with profile initial */}
         <View style={styles.banner}>
           <View style={styles.bigAvatar}>
-            <Text style={styles.avatarText}>
-              {businessName ? businessName.substring(0, 1) : fullName.substring(0, 1)}
-            </Text>
+            {isBusiness ? (
+              profile.businessLogo ? (
+                <Text style={styles.avatarText}>{profile.businessLogo}</Text>
+              ) : (
+                <Text style={styles.avatarText}>
+                  {businessName ? businessName.substring(0, 1) : fullName.substring(0, 1)}
+                </Text>
+              )
+            ) : (
+              profile.profilePhoto ? (
+                <Text style={styles.avatarText}>{profile.profilePhoto}</Text>
+              ) : (
+                <Text style={styles.avatarText}>{fullName.substring(0, 1)}</Text>
+              )
+            )}
           </View>
           <Text style={styles.bannerName}>{businessName || fullName}</Text>
           <Text style={styles.bannerRole}>{providerType}</Text>
@@ -68,6 +80,66 @@ export default function ProfileScreen() {
 
         {/* Form */}
         <View style={styles.formCard}>
+          {/* Mock Photo / Logo Uploader */}
+          <View style={styles.uploaderGroup}>
+            <Text style={styles.formSectionTitle}>
+              {isBusiness ? '🏢 Business Logo' : '👤 Profile Photo'}
+            </Text>
+            <View style={styles.uploaderRow}>
+              <View style={styles.previewContainer}>
+                {isBusiness ? (
+                  profile.businessLogo ? (
+                    <Text style={styles.previewIcon}>{profile.businessLogo}</Text>
+                  ) : (
+                    <Text style={styles.previewIconPlaceholder}>🏢</Text>
+                  )
+                ) : (
+                  profile.profilePhoto ? (
+                    <Text style={styles.previewIcon}>{profile.profilePhoto}</Text>
+                  ) : (
+                    <Text style={styles.previewIconPlaceholder}>👤</Text>
+                  )
+                )}
+              </View>
+              <View style={styles.uploaderButtons}>
+                <Text style={styles.uploaderInstructions}>
+                  {isBusiness 
+                    ? 'Upload a company logo icon for your customers to identify your business.' 
+                    : 'Upload a clear profile photo of yourself.'}
+                </Text>
+                <View style={styles.mockSelectorRow}>
+                  {isBusiness ? (
+                    ['🏢', '🛠️', '🚗', '📦', '🧼'].map(logo => (
+                      <TouchableOpacity 
+                        key={logo} 
+                        style={[
+                          styles.mockSelectorBtn, 
+                          profile.businessLogo === logo ? styles.mockSelectorBtnActive : null
+                        ]}
+                        onPress={() => uploadBusinessLogo(logo)}
+                      >
+                        <Text style={styles.mockSelectorText}>{logo}</Text>
+                      </TouchableOpacity>
+                    ))
+                  ) : (
+                    ['👨‍✈️', '👩‍✈️', '👨‍🔧', '👩‍🔧', '👤'].map(avatar => (
+                      <TouchableOpacity 
+                        key={avatar} 
+                        style={[
+                          styles.mockSelectorBtn, 
+                          profile.profilePhoto === avatar ? styles.mockSelectorBtnActive : null
+                        ]}
+                        onPress={() => uploadProfilePhoto(avatar)}
+                      >
+                        <Text style={styles.mockSelectorText}>{avatar}</Text>
+                      </TouchableOpacity>
+                    ))
+                  )}
+                </View>
+              </View>
+            </View>
+          </View>
+
           <Text style={styles.formSectionTitle}>👤 Personal Information</Text>
           
           <View style={globalStyles.inputGroup}>
@@ -240,5 +312,67 @@ const styles = StyleSheet.create({
   },
   spacer: {
     height: 10,
+  },
+  uploaderGroup: {
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    paddingBottom: 20,
+  },
+  uploaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  previewContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  previewIcon: {
+    fontSize: 32,
+  },
+  previewIconPlaceholder: {
+    fontSize: 32,
+    color: colors.textLight,
+    opacity: 0.6,
+  },
+  uploaderButtons: {
+    flex: 1,
+  },
+  uploaderInstructions: {
+    fontSize: 11,
+    color: colors.textLight,
+    lineHeight: 15,
+    marginBottom: 8,
+  },
+  mockSelectorRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  mockSelectorBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
+    marginBottom: 6,
+  },
+  mockSelectorBtnActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
+  },
+  mockSelectorText: {
+    fontSize: 18,
   }
 });

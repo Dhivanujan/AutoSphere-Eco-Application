@@ -152,7 +152,7 @@ export default function RequestDetailsScreen() {
           <View style={styles.miniMap}>
             <Text style={styles.mapEmoji}>🗺️</Text>
             <Text style={styles.mapText}>Live GPS Navigation Routing</Text>
-          </TouchableOpacity>
+          </View>
         </View>
 
         {/* Activity log */}

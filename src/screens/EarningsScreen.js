@@ -7,6 +7,15 @@ import { useApp } from '../services/AppContext';
 export default function EarningsScreen() {
   const { earnings, setCurrentScreen } = useApp();
 
+  const completedTx = earnings.history.filter(tx => tx.status === 'Completed');
+  const completedTxCount = completedTx.length;
+  const completedTxSum = completedTx.reduce((acc, tx) => acc + tx.amount, 0);
+
+  const settledPayouts = earnings.history.filter(tx => tx.status === 'Settled' || tx.title.includes('Payout'));
+  const settledSum = settledPayouts.reduce((acc, tx) => acc + tx.amount, 0);
+
+  const pendingSum = earnings.weekly;
+
   const handleRequestPayout = () => {
     alert('Requesting Bank Payout for: $' + earnings.weekly.toFixed(2) + '\nThis will settle in 2 business days.');
   };
@@ -43,6 +52,45 @@ export default function EarningsScreen() {
           <View style={[globalStyles.card, styles.breakdownCard]}>
             <Text style={styles.breakdownLabel}>This Month</Text>
             <Text style={styles.breakdownVal}>${earnings.monthly.toFixed(2)}</Text>
+          </View>
+        </View>
+
+        {/* Reports: Statement breakdown */}
+        <View style={globalStyles.card}>
+          <Text style={styles.sectionHeader}>📋 Statement Breakdown Report</Text>
+          <View style={styles.reportRow}>
+            <View style={styles.reportItem}>
+              <View style={[styles.reportBadge, { backgroundColor: colors.successLight }]}>
+                <Text style={[styles.reportIcon, { color: colors.success }]}>✓</Text>
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.reportLabel}>Completed Services</Text>
+                <Text style={styles.reportDesc}>{completedTxCount} jobs successfully completed</Text>
+              </View>
+              <Text style={[styles.reportVal, { color: colors.success }]}>+${completedTxSum.toFixed(2)}</Text>
+            </View>
+
+            <View style={styles.reportItem}>
+              <View style={[styles.reportBadge, { backgroundColor: colors.infoLight }]}>
+                <Text style={[styles.reportIcon, { color: colors.info }]}>🏦</Text>
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.reportLabel}>Payments Received (Settled)</Text>
+                <Text style={styles.reportDesc}>Transferred successfully to bank account</Text>
+              </View>
+              <Text style={[styles.reportVal, { color: colors.info }]}>${settledSum.toFixed(2)}</Text>
+            </View>
+
+            <View style={styles.reportItem}>
+              <View style={[styles.reportBadge, { backgroundColor: colors.pendingLight }]}>
+                <Text style={[styles.reportIcon, { color: colors.pending }]}>⏳</Text>
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.reportLabel}>Pending Payments (Unsettled)</Text>
+                <Text style={styles.reportDesc}>Accrued balance awaiting weekly payout</Text>
+              </View>
+              <Text style={[styles.reportVal, { color: colors.pending }]}>${pendingSum.toFixed(2)}</Text>
+            </View>
           </View>
         </View>
 
@@ -247,5 +295,40 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: colors.textLight,
     marginTop: 2,
+  },
+  reportRow: {
+    marginTop: 5,
+  },
+  reportItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  reportBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reportIcon: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  reportLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.secondary,
+  },
+  reportDesc: {
+    fontSize: 10,
+    color: colors.textLight,
+    marginTop: 2,
+  },
+  reportVal: {
+    fontSize: 14,
+    fontWeight: '800',
   }
 });

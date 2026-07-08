@@ -251,6 +251,20 @@ export const AppProvider = ({ children }) => {
     setCurrentScreen('DOCUMENT_UPLOAD');
   };
 
+  const uploadProfilePhoto = (photo) => {
+    setProfile(prev => ({
+      ...prev,
+      profilePhoto: photo
+    }));
+  };
+
+  const uploadBusinessLogo = (logo) => {
+    setProfile(prev => ({
+      ...prev,
+      businessLogo: logo
+    }));
+  };
+
   const uploadDocument = (docKey, fileName) => {
     setDocuments(prev => {
       const updated = { ...prev, [docKey]: fileName };
@@ -431,6 +445,8 @@ export const AppProvider = ({ children }) => {
       verifyOTP,
       selectProviderType,
       saveBusinessProfile,
+      uploadProfilePhoto,
+      uploadBusinessLogo,
       uploadDocument,
       submitDocumentsForVerification,
       acceptRequest,
