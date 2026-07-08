@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Platform, SafeAreaView } from 'react-native';
 import { AppProvider, useApp } from './src/services/AppContext';
 import { colors } from './src/theme/colors';
+import { api } from './src/services/api';
+
 
 // Import All 20 Screens
 import SplashScreen from './src/screens/SplashScreen';
@@ -82,68 +84,74 @@ function DevToolsOverlay() {
     setCurrentScreen, 
     providerType, 
     setProviderType, 
-    setRequests, 
-    setNotifications,
     documents,
-    setDocuments
+    firebaseActive
   } = useApp();
 
   const [isOpen, setIsOpen] = useState(false);
 
-  // Instantly simulate a new incoming request based on chosen provider type
-  const triggerMockRequest = () => {
-    const idNum = Math.floor(Math.random() * 900) + 100;
-    let newReq = {
-      id: `req-${idNum}`,
-      type: providerType,
-      customerName: 'Marcus Aurelius',
-      customerPhone: '+1 (555) 753-9514',
-      pickupLocation: 'Centennial Arena Hall D',
-      time: 'Just now',
-      notes: 'Urgent service request. Settle via card.',
-      fare: 45.00,
-      status: 'Pending',
-      history: [{ time: 'Just now', event: 'Request triggered by customer via dispatch' }]
-    };
+  // Instantly simulate a new incoming request based on chosen provider type in the active DB
+  const triggerMockRequest = async () => {
+    let serviceDetails = '';
+    let extraFields = {};
 
     if (providerType === 'Garage') {
-      newReq.serviceDetails = 'Radiator Coolant Flushing & System Check';
-      newReq.vehicleDetails = '2020 Chevrolet Traverse (Blue)';
+      serviceDetails = 'Radiator Coolant Flushing & System Check';
+      extraFields = { vehicleDetails: '2020 Chevrolet Traverse (Blue)' };
     } else if (providerType === 'Spare Parts Seller') {
-      newReq.serviceDetails = 'Engine Spark Plugs Core Kit Set';
-      newReq.partNumber = 'SP-CORE-NGK';
+      serviceDetails = 'Engine Spark Plugs Core Kit Set';
+      extraFields = { partNumber: 'SP-CORE-NGK' };
     } else {
-      newReq.serviceDetails = 'Premium Transit (5.8 miles)';
+      serviceDetails = 'Premium Transit (5.8 miles)';
     }
 
-    // Add to requests list
-    setRequests(prev => [newReq, ...prev]);
-
-    // Add notification
-    setNotifications(prev => [
-      {
-        id: `nt-mock-${idNum}`,
-        title: 'New Dispatch Order',
-        body: `New request from Marcus Aurelius for ${providerType}. Est: $45.00.`,
-        time: 'Just now',
-        read: false,
-        type: 'request'
-      },
-      ...prev
-    ]);
-
-    alert(`🔔 Simulated new request received!\nCustomer: Marcus Aurelius\nCategory: ${providerType}`);
+    try {
+      await api.requests.createMockDispatchOrder(
+        providerType,
+        'Marcus Aurelius',
+        45.00,
+        serviceDetails,
+        extraFields
+      );
+      alert(`🔔 Simulated new request received!\nCustomer: Marcus Aurelius\nCategory: ${providerType}`);
+    } catch (err) {
+      alert('Mock dispatch order creation failed: ' + err.message);
+    }
   };
 
-  const setVerification = (statusValue) => {
-    setDocuments(prev => ({
-      ...prev,
-      status: statusValue,
-      reviewNotes: statusValue === 'Rejected' 
-        ? 'Identity card photo was blur/unreadable.' 
-        : 'Approved successfully.'
-    }));
-    alert(`Verification status updated to: ${statusValue}`);
+  const setVerification = async (statusValue) => {
+    // Get current session/profile details to update verification
+    const session = await api.auth.getCurrentUser();
+    const uid = session?.uid;
+    if (uid) {
+      try {
+        const reviewNotes = statusValue === 'Rejected' 
+          ? 'Identity card photo was blur/unreadable.' 
+          : 'Approved successfully.';
+        
+        await api.profile.updateProfile(uid, {
+          documents: {
+            ...documents,
+            status: statusValue,
+            reviewNotes: reviewNotes
+          }
+        });
+
+        // If approved, trigger notification
+        if (statusValue === 'Approved') {
+          // Add system notification via API
+          if (firebaseActive) {
+            // Note: Since firebase is active, it will write directly.
+            // But we can add a notification for the user.
+          }
+        }
+        alert(`Verification status updated to: ${statusValue}`);
+      } catch (err) {
+        alert('Failed to update verification: ' + err.message);
+      }
+    } else {
+      alert('No user is currently logged in. Register/Login first.');
+    }
   };
 
   if (!isOpen) {
@@ -176,7 +184,12 @@ function DevToolsOverlay() {
   return (
     <View style={styles.devPanel}>
       <View style={styles.panelHeader}>
-        <Text style={styles.panelTitle}>🛠️ Developer Mock Toolbar</Text>
+        <View>
+          <Text style={styles.panelTitle}>🛠️ Developer Toolbar</Text>
+          <Text style={{ color: firebaseActive ? '#10B981' : '#F59E0B', fontSize: 10, fontWeight: '700', marginTop: 2 }}>
+            Database: {firebaseActive ? '🟢 FIREBASE ACTIVE' : '🟡 LOCAL MOCK STORAGE'}
+          </Text>
+        </View>
         <TouchableOpacity style={styles.closeBtn} onPress={() => setIsOpen(false)}>
           <Text style={styles.closeBtnText}>Minimize ✕</Text>
         </TouchableOpacity>
@@ -241,6 +254,7 @@ function DevToolsOverlay() {
     </View>
   );
 }
+
 
 export default function App() {
   return (
