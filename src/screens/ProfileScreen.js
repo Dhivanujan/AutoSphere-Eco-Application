@@ -63,14 +63,14 @@ export default function ProfileScreen() {
                 <Text style={styles.avatarText}>{profile.businessLogo}</Text>
               ) : (
                 <Text style={styles.avatarText}>
-                  {businessName ? businessName.substring(0, 1) : fullName.substring(0, 1)}
+                  {(businessName || fullName || 'P').substring(0, 1)}
                 </Text>
               )
             ) : (
               profile.profilePhoto ? (
                 <Text style={styles.avatarText}>{profile.profilePhoto}</Text>
               ) : (
-                <Text style={styles.avatarText}>{fullName.substring(0, 1)}</Text>
+                <Text style={styles.avatarText}>{(fullName || 'P').substring(0, 1)}</Text>
               )
             )}
           </View>

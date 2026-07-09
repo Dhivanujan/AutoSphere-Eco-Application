@@ -16,6 +16,17 @@ export default function EarningsScreen() {
 
   const pendingSum = earnings.weekly;
 
+  const getDynamicWeeklyCycle = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const diffToMonday = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    const startOfWeek = new Date(new Date().setDate(diffToMonday));
+    const endOfWeek = new Date(new Date().setDate(diffToMonday + 6));
+    
+    const options = { month: 'short', day: 'numeric' };
+    return `Cycle: ${startOfWeek.toLocaleDateString('en-US', options)} - ${endOfWeek.toLocaleDateString('en-US', options)}`;
+  };
+
   const handleRequestPayout = () => {
     alert('Requesting Bank Payout for: $' + earnings.weekly.toFixed(2) + '\nThis will settle in 2 business days.');
   };
@@ -36,7 +47,7 @@ export default function EarningsScreen() {
         <View style={[globalStyles.card, { backgroundColor: colors.secondary }]}>
           <Text style={styles.balanceLabel}>CURRENT BALANCE (UNSETTLED)</Text>
           <Text style={styles.balanceAmount}>${earnings.weekly.toFixed(2)}</Text>
-          <Text style={styles.balanceSub}>Cycle: July 1 - July 7</Text>
+          <Text style={styles.balanceSub}>{getDynamicWeeklyCycle()}</Text>
           
           <TouchableOpacity style={styles.payoutBtn} onPress={handleRequestPayout}>
             <Text style={styles.payoutBtnText}>Payout to Bank Account</Text>

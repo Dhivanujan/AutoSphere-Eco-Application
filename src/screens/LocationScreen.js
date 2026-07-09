@@ -23,14 +23,40 @@ export default function LocationScreen() {
   };
 
   const handleSimulateGPS = () => {
-    const latOffset = (Math.random() - 0.5) * 0.02;
-    const lngOffset = (Math.random() - 0.5) * 0.02;
-    setLocation(prev => ({
-      ...prev,
-      latitude: prev.latitude + latOffset,
-      longitude: prev.longitude + lngOffset,
-    }));
-    alert('GPS location recalibrated successfully!');
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation(prev => ({
+            ...prev,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            address: 'Device GPS Coordinates'
+          }));
+          alert('GPS coordinates updated from your device successfully!');
+        },
+        (error) => {
+          // Fallback to random offset simulation
+          const latOffset = (Math.random() - 0.5) * 0.02;
+          const lngOffset = (Math.random() - 0.5) * 0.02;
+          setLocation(prev => ({
+            ...prev,
+            latitude: prev.latitude + latOffset,
+            longitude: prev.longitude + lngOffset,
+          }));
+          alert('Device GPS unavailable. Recalibrated via simulator offsets.');
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 10000 }
+      );
+    } else {
+      const latOffset = (Math.random() - 0.5) * 0.02;
+      const lngOffset = (Math.random() - 0.5) * 0.02;
+      setLocation(prev => ({
+        ...prev,
+        latitude: prev.latitude + latOffset,
+        longitude: prev.longitude + lngOffset,
+      }));
+      alert('GPS location recalibrated successfully via simulation!');
+    }
   };
 
   return (

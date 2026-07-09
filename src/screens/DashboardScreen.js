@@ -182,14 +182,14 @@ export default function DashboardScreen() {
                 <Text style={styles.avatarTextIcon}>{profile.businessLogo}</Text>
               ) : (
                 <Text style={styles.avatarText}>
-                  {profile.businessName ? profile.businessName.substring(0, 1) : profile.fullName.substring(0, 1)}
+                  {(profile.businessName || profile.fullName || 'P').substring(0, 1)}
                 </Text>
               )
             ) : (
               profile.profilePhoto ? (
                 <Text style={styles.avatarTextIcon}>{profile.profilePhoto}</Text>
               ) : (
-                <Text style={styles.avatarText}>{profile.fullName.substring(0, 1)}</Text>
+                <Text style={styles.avatarText}>{(profile.fullName || 'P').substring(0, 1)}</Text>
               )
             )}
           </View>

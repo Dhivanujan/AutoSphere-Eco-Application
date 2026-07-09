@@ -134,6 +134,36 @@ const initialNotifications = [
   { id: 'nt-4', title: '5-Star Review Received', body: 'Jessica Taylor left a 5-star review for your ride service.', time: '1 week ago', read: true, type: 'review' }
 ];
 
+const defaultMockUsers = [
+  {
+    uid: 'demo-provider-uid',
+    email: 'alex.carter@autosphere.eco',
+    password: 'password123',
+    profile: {
+      fullName: 'Alex Carter',
+      email: 'alex.carter@autosphere.eco',
+      phone: '+1 (555) 789-0123',
+      profilePhoto: '👨‍✈️',
+      businessName: 'Carter Auto Repairs',
+      businessLogo: '🛠️',
+      address: '742 Evergreen Terrace, Springfield',
+      workingHours: '08:00 AM - 06:00 PM',
+      workingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      serviceArea: 'Springfield Metro Area',
+      serviceRadius: 15,
+      providerType: 'Garage',
+      documents: {
+        identityDoc: 'government_id_card.pdf',
+        businessReg: 'business_registration_license.pdf',
+        license: 'commercial_operating_permit.pdf',
+        certificates: 'insurance_and_liability_cert.pdf',
+        status: 'Approved',
+        reviewNotes: 'Verified via Quick Dev Tools.'
+      }
+    }
+  }
+];
+
 // --- OFFLINE STATE STORE MANAGERS ---
 const localAuthCallbacks = {};
 const activeSubscriptions = {}; // key -> array of callbacks
@@ -205,7 +235,7 @@ export const api = {
         return { uid: firebaseUser.uid, email: firebaseUser.email };
       } else {
         // Mock Login
-        const users = await getOfflineData('autosphere_users', []);
+        const users = await getOfflineData('autosphere_users', defaultMockUsers);
         const foundUser = users.find(u => u.email === email && u.password === password);
         if (!foundUser) {
           throw new Error('Invalid email or password.');
@@ -248,7 +278,7 @@ export const api = {
         return { uid: firebaseUser.uid, email: firebaseUser.email, ...initialProfile };
       } else {
         // Mock Register
-        const users = await getOfflineData('autosphere_users', []);
+        const users = await getOfflineData('autosphere_users', defaultMockUsers);
         const alreadyExists = users.some(u => u.email === email);
         if (alreadyExists) {
           throw new Error('An account with this email already exists.');
@@ -342,7 +372,7 @@ export const api = {
         await updateDoc(userRef, profileData);
       } else {
         // Mock update
-        const users = await getOfflineData('autosphere_users', []);
+        const users = await getOfflineData('autosphere_users', defaultMockUsers);
         const userIndex = users.findIndex(u => u.uid === uid);
         if (userIndex !== -1) {
           users[userIndex].profile = { ...users[userIndex].profile, ...profileData };

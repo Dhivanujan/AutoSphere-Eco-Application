@@ -112,7 +112,7 @@ export default function RequestDetailsScreen() {
           <Text style={styles.sectionHeader}>👤 Customer Profile</Text>
           <View style={styles.customerInfoRow}>
             <View style={styles.custAvatar}>
-              <Text style={styles.avatarLetter}>{customerName.substring(0, 1)}</Text>
+              <Text style={styles.avatarLetter}>{(customerName || 'C').substring(0, 1)}</Text>
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.custName}>{customerName}</Text>

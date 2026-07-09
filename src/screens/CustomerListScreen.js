@@ -83,7 +83,7 @@ export default function CustomerListScreen() {
             <View key={cust.phone} style={globalStyles.card}>
               <View style={styles.customerHeader}>
                 <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>{cust.name.substring(0, 1)}</Text>
+                  <Text style={styles.avatarText}>{(cust.name || 'C').substring(0, 1)}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.custName}>{cust.name}</Text>
