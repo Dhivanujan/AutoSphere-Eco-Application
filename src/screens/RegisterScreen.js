@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
@@ -42,7 +42,11 @@ export default function RegisterScreen() {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
           <View style={styles.headerArea}>
-            <Text style={styles.logoText}>⚙️ AutoSphere</Text>
+            <Image 
+              source={require('../../assets/logo.png')} 
+              style={styles.logoImage} 
+              resizeMode="contain"
+            />
             <Text style={styles.title}>Create Provider Account</Text>
             <Text style={styles.subtitle}>Register your business to begin receiving customer requests</Text>
           </View>
@@ -139,10 +143,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignItems: 'center',
   },
-  logoText: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.primary,
+  logoImage: {
+    width: 220,
+    height: 110,
     marginBottom: 10,
   },
   title: {

@@ -33,15 +33,11 @@ export default function SplashScreen() {
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.logoContainer, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
-        {/* Animated Brand Mark */}
-        <View style={styles.brandMark}>
-          <Text style={styles.brandIcon}>⚙️</Text>
-        </View>
-        
-        <Text style={styles.title}>
-          <Text style={styles.titlePrimary}>AutoSphere</Text>
-          <Text style={styles.titleSecondary}> Eco</Text>
-        </Text>
+        <Image 
+          source={require('../../assets/logo.png')} 
+          style={styles.logoImage} 
+          resizeMode="contain"
+        />
         <Text style={styles.subtitle}>Partner & Provider Workspace</Text>
       </Animated.View>
 
@@ -66,38 +62,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 60,
   },
-  brandMark: {
-    width: 90,
-    height: 90,
-    borderRadius: 24,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  brandIcon: {
-    fontSize: 48,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-  },
-  titlePrimary: {
-    color: colors.textWhite,
-  },
-  titleSecondary: {
-    color: colors.primary, // Vibrant Orange
+  logoImage: {
+    width: 260,
+    height: 260,
+    marginBottom: 10,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textLight,
-    marginTop: 8,
+    marginTop: 15,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     fontWeight: '600',

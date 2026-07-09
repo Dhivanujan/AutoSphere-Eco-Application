@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Platform } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Platform, Image } from 'react-native';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
@@ -7,6 +7,16 @@ import { useApp } from '../services/AppContext';
 export default function VerificationStatusScreen() {
   const { documents, setCurrentScreen, providerType, profile, setDocuments, setNotifications } = useApp();
   const { status, reviewNotes } = documents;
+
+  // Fix Defect: Prototype auto-approval timer (12 seconds)
+  useEffect(() => {
+    if (status === 'Pending') {
+      const timer = setTimeout(() => {
+        forceApprove();
+      }, 12000);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
 
   const handleAction = () => {
     if (status === 'Approved') {
@@ -47,7 +57,11 @@ export default function VerificationStatusScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.logoText}>⚙️ AutoSphere Eco</Text>
+        <Image 
+          source={require('../../assets/logo.png')} 
+          style={styles.headerLogo} 
+          resizeMode="contain"
+        />
       </View>
 
       <View style={styles.content}>
@@ -124,11 +138,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 10,
   },
-  logoText: {
-    color: colors.textWhite,
-    fontSize: 16,
-    fontWeight: '800',
+  headerLogo: {
+    width: 130,
+    height: 38,
   },
   content: {
     flex: 1,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Platform, Image } from 'react-native';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
@@ -24,7 +24,11 @@ export default function TypeSelectionScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.logoText}>⚙️ AutoSphere Eco</Text>
+        <Image 
+          source={require('../../assets/logo.png')} 
+          style={styles.headerLogo} 
+          resizeMode="contain"
+        />
       </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.introArea}>
@@ -79,16 +83,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    paddingVertical: 15,
+    paddingVertical: 10,
     backgroundColor: colors.secondary,
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
-  logoText: {
-    color: colors.textWhite,
-    fontSize: 16,
-    fontWeight: '800',
+  headerLogo: {
+    width: 130,
+    height: 38,
   },
   scrollContent: {
     padding: 20,
