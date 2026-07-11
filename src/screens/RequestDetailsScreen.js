@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Platform } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Platform, Linking, TextInput, Modal, FlatList, KeyboardAvoidingView } from 'react-native';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
@@ -12,8 +12,14 @@ export default function RequestDetailsScreen() {
     startService, 
     completeService, 
     documents,
-    setCurrentScreen 
+    setCurrentScreen,
+    activeChatMessages,
+    sendChatMessage
   } = useApp();
+
+  const [chatVisible, setChatVisible] = useState(false);
+  const [messageText, setMessageText] = useState('');
+  const flatListRef = useRef(null);
 
   if (documents.status !== 'Approved') {
     return (
@@ -54,11 +60,20 @@ export default function RequestDetailsScreen() {
   const { id, customerName, customerPhone, serviceDetails, vehicleDetails, pickupLocation, dropoffLocation, time, notes, fare, status, history, partNumber } = selectedRequest;
 
   const handleCall = () => {
-    alert(`Calling Customer: ${customerPhone}`);
+    Linking.openURL(`tel:${customerPhone}`).catch(() => {
+      alert(`Could not trigger phone call. Contact number: ${customerPhone}`);
+    });
   };
 
   const handleMessage = () => {
-    alert(`Opening Chat Messenger with ${customerName}`);
+    setChatVisible(true);
+  };
+
+  const handleSend = () => {
+    if (messageText.trim()) {
+      sendChatMessage(messageText);
+      setMessageText('');
+    }
   };
 
   return (
@@ -233,6 +248,60 @@ export default function RequestDetailsScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Dynamic Chat Messenger Modal */}
+      <Modal
+        visible={chatVisible}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setChatVisible(false)}
+      >
+        <SafeAreaView style={styles.chatContainer}>
+          <View style={styles.chatHeader}>
+            <TouchableOpacity style={styles.chatCloseBtn} onPress={() => setChatVisible(false)}>
+              <Text style={styles.chatCloseBtnText}>✕ Close</Text>
+            </TouchableOpacity>
+            <Text style={styles.chatHeaderTitle}>{customerName}</Text>
+            <View style={{ width: 60 }} />
+          </View>
+
+          <FlatList
+            data={activeChatMessages}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.chatMessagesList}
+            renderItem={({ item }) => {
+              const isMe = item.sender === 'Provider';
+              return (
+                <View style={[styles.msgWrapper, isMe ? styles.msgWrapperMe : styles.msgWrapperOther]}>
+                  <View style={[styles.msgBubble, isMe ? styles.msgBubbleMe : styles.msgBubbleOther]}>
+                    <Text style={[styles.msgText, isMe ? styles.msgTextMe : styles.msgTextOther]}>{item.text}</Text>
+                    <Text style={[styles.msgTime, isMe ? styles.msgTimeMe : styles.msgTimeOther]}>{item.time}</Text>
+                  </View>
+                </View>
+              );
+            }}
+            ref={flatListRef}
+            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          />
+
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.chatInputRow}
+          >
+            <TextInput
+              style={styles.chatInput}
+              value={messageText}
+              onChangeText={setMessageText}
+              placeholder="Type your message here..."
+              placeholderTextColor="#94A3B8"
+              onSubmitEditing={handleSend}
+            />
+            <TouchableOpacity style={styles.chatSendBtn} onPress={handleSend}>
+              <Text style={styles.chatSendBtnText}>Send</Text>
+            </TouchableOpacity>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -543,5 +612,113 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     textAlign: 'center',
     lineHeight: 22,
+  },
+  chatContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  chatHeader: {
+    height: 56,
+    backgroundColor: colors.secondary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+  },
+  chatCloseBtn: {
+    paddingVertical: 5,
+  },
+  chatCloseBtnText: {
+    color: colors.primary,
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  chatHeaderTitle: {
+    color: colors.textWhite,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  chatMessagesList: {
+    padding: 16,
+    paddingBottom: 20,
+  },
+  msgWrapper: {
+    marginVertical: 6,
+    flexDirection: 'row',
+    width: '100%',
+  },
+  msgWrapperMe: {
+    justifyContent: 'flex-end',
+  },
+  msgWrapperOther: {
+    justifyContent: 'flex-start',
+  },
+  msgBubble: {
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    maxWidth: '75%',
+  },
+  msgBubbleMe: {
+    backgroundColor: colors.primary,
+    borderBottomRightRadius: 4,
+  },
+  msgBubbleOther: {
+    backgroundColor: colors.card,
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  msgText: {
+    fontSize: 14,
+    lineHeight: 18,
+  },
+  msgTextMe: {
+    color: colors.textWhite,
+  },
+  msgTextOther: {
+    color: colors.secondary,
+  },
+  msgTime: {
+    fontSize: 9,
+    marginTop: 4,
+    textAlign: 'right',
+  },
+  msgTimeMe: {
+    color: 'rgba(255,255,255,0.7)',
+  },
+  msgTimeOther: {
+    color: colors.textLight,
+  },
+  chatInputRow: {
+    flexDirection: 'row',
+    padding: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.card,
+    alignItems: 'center',
+  },
+  chatInput: {
+    flex: 1,
+    height: 40,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    fontSize: 14,
+    backgroundColor: colors.background,
+    color: colors.secondary,
+  },
+  chatSendBtn: {
+    marginLeft: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+  },
+  chatSendBtnText: {
+    color: colors.textWhite,
+    fontWeight: '700',
+    fontSize: 13,
   }
 });

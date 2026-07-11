@@ -1,8 +1,43 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Platform, Image, Linking } from 'react-native';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+
+// Reusable Live Map Component
+const InteractiveMap = ({ latitude, longitude }) => {
+  if (Platform.OS === 'web') {
+    const mapUrl = `https://maps.google.com/maps?q=${latitude},${longitude}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+    return (
+      <iframe
+        src={mapUrl}
+        style={{
+          width: '100%',
+          height: '100%',
+          border: 'none',
+          borderRadius: '10px'
+        }}
+        title="Interactive GPS Map"
+      />
+    );
+  } else {
+    const staticMapUrl = `https://static-maps.yandex.ru/1.x/?ll=${longitude},${latitude}&spn=0.016,0.016&l=map&size=450,200`;
+    return (
+      <TouchableOpacity 
+        style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
+        onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`)}
+      >
+        <Image 
+          source={{ uri: staticMapUrl }} 
+          style={{ width: '100%', height: '100%', borderRadius: 10 }} 
+        />
+        <View style={{ position: 'absolute', backgroundColor: 'rgba(13, 17, 23, 0.75)', padding: 6, borderRadius: 6 }}>
+          <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>📍 Open in System Maps ↗</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+};
 
 export default function DashboardScreen() {
   const { 
@@ -15,6 +50,7 @@ export default function DashboardScreen() {
     reviews, 
     notifications,
     documents,
+    location,
     setCurrentScreen,
     setSelectedRequest
   } = useApp();
@@ -74,9 +110,7 @@ export default function DashboardScreen() {
           </Text>
         </View>
         <View style={styles.mapMock}>
-          <Text style={styles.mapIcon}>🗺️</Text>
-          <Text style={styles.mapText}>Simulating live GPS navigation...</Text>
-          <Text style={styles.mapSubtext}>{profile.serviceArea}</Text>
+          <InteractiveMap latitude={location.latitude} longitude={location.longitude} />
         </View>
         <TouchableOpacity 
           style={[globalStyles.btnSecondary, { marginTop: 12 }]}

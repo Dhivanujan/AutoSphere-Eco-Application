@@ -749,5 +749,103 @@ export const api = {
         };
       }
     }
+  },
+
+  // --- PAYOUTS ---
+  payouts: {
+    subscribePayouts: (uid, callback) => {
+      if (isFirebaseConfigured && db) {
+        const q = query(collection(db, 'payouts'), where('providerId', '==', uid));
+        return onSnapshot(q, (snap) => {
+          const list = [];
+          snap.forEach(docSnap => {
+            list.push({ id: docSnap.id, ...docSnap.data() });
+          });
+          list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+          callback(list);
+        });
+      } else {
+        const subKey = `payouts_${uid}`;
+        if (!activeSubscriptions[subKey]) activeSubscriptions[subKey] = [];
+        activeSubscriptions[subKey].push(callback);
+
+        getOfflineData(`autosphere_payouts_${uid}`, []).then(list => {
+          callback(list);
+        });
+
+        return () => {
+          activeSubscriptions[subKey] = activeSubscriptions[subKey].filter(cb => cb !== callback);
+        };
+      }
+    },
+    createPayout: async (uid, amount) => {
+      const payoutObj = {
+        providerId: uid,
+        amount: amount,
+        title: 'Payout to Bank Account',
+        date: `Today, ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+        status: 'Processing',
+        createdAt: new Date().toISOString()
+      };
+      if (isFirebaseConfigured && db) {
+        await addDoc(collection(db, 'payouts'), payoutObj);
+      } else {
+        const list = await getOfflineData(`autosphere_payouts_${uid}`, []);
+        const newPayout = { id: 'po-' + Date.now(), ...payoutObj };
+        list.unshift(newPayout);
+        await setOfflineData(`autosphere_payouts_${uid}`, list);
+        triggerLocalSubscription(`payouts_${uid}`, list);
+      }
+    }
+  },
+
+  // --- CHAT MESSAGES ---
+  chat: {
+    subscribeMessages: (requestId, callback) => {
+      if (isFirebaseConfigured && db) {
+        const q = query(
+          collection(db, 'messages'), 
+          where('requestId', '==', requestId),
+          orderBy('createdAt', 'asc')
+        );
+        return onSnapshot(q, (snap) => {
+          const list = [];
+          snap.forEach(docSnap => {
+            list.push({ id: docSnap.id, ...docSnap.data() });
+          });
+          callback(list);
+        });
+      } else {
+        const subKey = `chat_${requestId}`;
+        if (!activeSubscriptions[subKey]) activeSubscriptions[subKey] = [];
+        activeSubscriptions[subKey].push(callback);
+
+        getOfflineData(`autosphere_chat_${requestId}`, []).then(list => {
+          callback(list);
+        });
+
+        return () => {
+          activeSubscriptions[subKey] = activeSubscriptions[subKey].filter(cb => cb !== callback);
+        };
+      }
+    },
+    sendMessage: async (requestId, uid, sender, text) => {
+      const msgObj = {
+        requestId,
+        sender,
+        text,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        createdAt: new Date().toISOString()
+      };
+      if (isFirebaseConfigured && db) {
+        await addDoc(collection(db, 'messages'), msgObj);
+      } else {
+        const list = await getOfflineData(`autosphere_chat_${requestId}`, []);
+        const newMsg = { id: 'msg-' + Date.now(), ...msgObj };
+        list.push(newMsg);
+        await setOfflineData(`autosphere_chat_${requestId}`, list);
+        triggerLocalSubscription(`chat_${requestId}`, list);
+      }
+    }
   }
 };

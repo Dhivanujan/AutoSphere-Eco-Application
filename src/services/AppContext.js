@@ -49,6 +49,10 @@ export const AppProvider = ({ children }) => {
   const [reviews, setReviews] = useState([]);
   const [notifications, setNotifications] = useState([]);
   
+  // Payouts & Chats
+  const [payouts, setPayouts] = useState([]);
+  const [activeChatMessages, setActiveChatMessages] = useState([]);
+
   // Earnings metrics (dynamically calculated from requests)
   const [earnings, setEarnings] = useState({
     daily: 0,
@@ -188,18 +192,40 @@ export const AppProvider = ({ children }) => {
       setReviews(data);
     });
 
+    // Listen for payouts
+    const unsubPayouts = api.payouts.subscribePayouts(currentUser.uid, (data) => {
+      setPayouts(data);
+    });
+
     return () => {
       if (typeof unsubReqs === 'function') unsubReqs();
       if (typeof unsubNotifs === 'function') unsubNotifs();
       if (typeof unsubReviews === 'function') unsubReviews();
+      if (typeof unsubPayouts === 'function') unsubPayouts();
     };
   }, [currentUser, providerType]);
 
-  // 3. EARNINGS METRICS CALCULATION (Computed dynamically from completed jobs)
+  // 2.5. CHAT MESSAGES REAL-TIME SUBSCRIPTION
+  useEffect(() => {
+    if (!selectedRequest) {
+      setActiveChatMessages([]);
+      return;
+    }
+
+    const unsubChat = api.chat.subscribeMessages(selectedRequest.id, (data) => {
+      setActiveChatMessages(data);
+    });
+
+    return () => {
+      if (typeof unsubChat === 'function') unsubChat();
+    };
+  }, [selectedRequest]);
+
+  // 3. EARNINGS METRICS CALCULATION (Computed dynamically from completed jobs & payouts)
   useEffect(() => {
     const completed = requests.filter(r => r.status === 'Completed');
     
-    const historyList = completed.map(req => {
+    const jobsHistory = completed.map(req => {
       // Find completion event time in history
       const compEvent = req.history?.find(h => h.event.includes('completed')) || req.history?.[req.history.length - 1];
       const eventTime = compEvent ? compEvent.time : 'Just now';
@@ -208,19 +234,35 @@ export const AppProvider = ({ children }) => {
         amount: req.fare,
         title: `${req.customerName} - ${req.serviceDetails?.split(':')[0] || 'Service'}`,
         date: `Today, ${eventTime}`,
-        status: 'Completed'
+        status: 'Completed',
+        createdAt: req.createdAt || new Date(0).toISOString()
       };
     });
 
+    const payoutsHistory = payouts.map(po => ({
+      id: po.id,
+      amount: -po.amount,
+      title: po.title,
+      date: po.date,
+      status: po.status,
+      createdAt: po.createdAt
+    }));
+
+    // Merge history and sort by createdAt desc
+    const combinedHistory = [...jobsHistory, ...payoutsHistory];
+    combinedHistory.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
     const totalFare = completed.reduce((acc, curr) => acc + curr.fare, 0);
+    const totalPayouts = payouts.reduce((acc, curr) => acc + curr.amount, 0);
+    const remainingBalance = Math.max(0, totalFare - totalPayouts);
 
     setEarnings({
       daily: completed.length > 0 ? completed[completed.length - 1].fare : 0,
-      weekly: totalFare,
-      monthly: totalFare,
-      history: historyList
+      weekly: remainingBalance,
+      monthly: remainingBalance,
+      history: combinedHistory
     });
-  }, [requests]);
+  }, [requests, payouts]);
 
   // --- ACTIONS / HANDLERS ---
   const loginUser = async (email, password) => {
@@ -346,6 +388,33 @@ export const AppProvider = ({ children }) => {
     await api.auth.logout();
   };
 
+  const requestPayout = async (amount) => {
+    if (currentUser && amount > 0) {
+      await api.payouts.createPayout(currentUser.uid, amount);
+      return true;
+    }
+    return false;
+  };
+
+  const sendChatMessage = async (text) => {
+    if (currentUser && selectedRequest && text.trim()) {
+      await api.chat.sendMessage(selectedRequest.id, currentUser.uid, 'Provider', text);
+      
+      // Auto-simulate a customer response after 1.5 seconds
+      setTimeout(async () => {
+        const responses = [
+          "Okay, thank you for updating!",
+          "Great! I am waiting.",
+          "Perfect, let me know when you arrive.",
+          "Thanks, sounds good!",
+          "Got it. Drive safe!"
+        ];
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+        await api.chat.sendMessage(selectedRequest.id, 'customer', selectedRequest.customerName, randomResponse);
+      }, 1500);
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       currentScreen,
@@ -386,7 +455,11 @@ export const AppProvider = ({ children }) => {
       updateSettings,
       logout,
       firebaseActive,
-      setNotifications
+      setNotifications,
+      payouts,
+      activeChatMessages,
+      requestPayout,
+      sendChatMessage
     }}>
       {children}
     </AppContext.Provider>

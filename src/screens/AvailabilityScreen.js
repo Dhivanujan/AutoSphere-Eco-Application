@@ -6,6 +6,12 @@ import { useApp } from '../services/AppContext';
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+const TIME_OPTIONS = [
+  '06:00 AM', '07:00 AM', '08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', 
+  '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM', 
+  '06:00 PM', '07:00 PM', '08:00 PM', '09:00 PM', '10:00 PM', '11:00 PM'
+];
+
 export default function AvailabilityScreen() {
   const { isOnline, setIsOnline, profile, setProfile, setCurrentScreen } = useApp();
 
@@ -13,10 +19,21 @@ export default function AvailabilityScreen() {
   const [workingHours, setWorkingHours] = useState(profile.workingHours || '08:00 AM - 06:00 PM');
   const [lunchBreak, setLunchBreak] = useState(true);
 
+  const initialHours = profile.workingHours || '08:00 AM - 06:00 PM';
+  const parts = initialHours.split(' - ');
+  const [startTime, setStartTime] = useState(parts[0] || '08:00 AM');
+  const [endTime, setEndTime] = useState(parts[1] || '06:00 PM');
+
   const toggleDay = (day) => {
     setWorkingDays(prev => 
       prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
     );
+  };
+
+  const handleTimeChange = (start, end) => {
+    setStartTime(start);
+    setEndTime(end);
+    setWorkingHours(`${start} - ${end}`);
   };
 
   const handleSave = () => {
@@ -69,12 +86,75 @@ export default function AvailabilityScreen() {
           
           <View style={styles.inputRow}>
             <Text style={styles.inputLabel}>Working Hours Range</Text>
-            <TouchableOpacity style={styles.timeSelectBtn} onPress={() => alert('Change working hours')}>
-              <Text style={styles.timeSelectBtnText}>{workingHours}</Text>
-            </TouchableOpacity>
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <Text style={{ fontSize: 11, color: colors.textLight, marginBottom: 4 }}>Start Time</Text>
+              {Platform.OS === 'web' ? (
+                <select
+                  value={startTime}
+                  onChange={(e) => handleTimeChange(e.target.value, endTime)}
+                  style={{
+                    padding: 8,
+                    borderRadius: 8,
+                    borderColor: colors.border,
+                    backgroundColor: colors.background,
+                    color: colors.secondary,
+                    borderWidth: 1,
+                    fontSize: 13,
+                    width: '100%'
+                  }}
+                >
+                  {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              ) : (
+                <TouchableOpacity 
+                  style={styles.timeSelectBtn} 
+                  onPress={() => {
+                    const idx = TIME_OPTIONS.indexOf(startTime);
+                    const next = TIME_OPTIONS[(idx + 1) % TIME_OPTIONS.length];
+                    handleTimeChange(next, endTime);
+                  }}
+                >
+                  <Text style={styles.timeSelectBtnText}>{startTime}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={{ flex: 1, marginLeft: 8 }}>
+              <Text style={{ fontSize: 11, color: colors.textLight, marginBottom: 4 }}>End Time</Text>
+              {Platform.OS === 'web' ? (
+                <select
+                  value={endTime}
+                  onChange={(e) => handleTimeChange(startTime, e.target.value)}
+                  style={{
+                    padding: 8,
+                    borderRadius: 8,
+                    borderColor: colors.border,
+                    backgroundColor: colors.background,
+                    color: colors.secondary,
+                    borderWidth: 1,
+                    fontSize: 13,
+                    width: '100%'
+                  }}
+                >
+                  {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              ) : (
+                <TouchableOpacity 
+                  style={styles.timeSelectBtn} 
+                  onPress={() => {
+                    const idx = TIME_OPTIONS.indexOf(endTime);
+                    const next = TIME_OPTIONS[(idx + 1) % TIME_OPTIONS.length];
+                    handleTimeChange(startTime, next);
+                  }}
+                >
+                  <Text style={styles.timeSelectBtnText}>{endTime}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
 
-          <View style={[styles.statusRow, { paddingVertical: 10, marginTop: 10 }]}>
+          <View style={[styles.statusRow, { paddingVertical: 10, marginTop: 15 }]}>
             <View style={{ flex: 1 }}>
               <Text style={styles.bodyText}>Include Lunch Break (1 Hour)</Text>
               <Text style={styles.subtext}>Automatically block 12:00 PM - 01:00 PM</Text>

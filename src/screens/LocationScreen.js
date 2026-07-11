@@ -1,8 +1,43 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, TextInput, Switch, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, TextInput, Switch, Platform, Image, Linking } from 'react-native';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+
+// Reusable Live Map Component
+const InteractiveMap = ({ latitude, longitude }) => {
+  if (Platform.OS === 'web') {
+    const mapUrl = `https://maps.google.com/maps?q=${latitude},${longitude}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+    return (
+      <iframe
+        src={mapUrl}
+        style={{
+          width: '100%',
+          height: '100%',
+          border: 'none',
+          borderRadius: '10px'
+        }}
+        title="Location Settings GPS Map"
+      />
+    );
+  } else {
+    const staticMapUrl = `https://static-maps.yandex.ru/1.x/?ll=${longitude},${latitude}&spn=0.016,0.016&l=map&size=450,200`;
+    return (
+      <TouchableOpacity 
+        style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
+        onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`)}
+      >
+        <Image 
+          source={{ uri: staticMapUrl }} 
+          style={{ width: '100%', height: '100%', borderRadius: 10 }} 
+        />
+        <View style={{ position: 'absolute', backgroundColor: 'rgba(13, 17, 23, 0.75)', padding: 6, borderRadius: 6 }}>
+          <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>📍 Open in System Maps ↗</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+};
 
 export default function LocationScreen() {
   const { location, setLocation, setCurrentScreen, profile } = useApp();
@@ -25,14 +60,34 @@ export default function LocationScreen() {
   const handleSimulateGPS = () => {
     if (typeof navigator !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          
+          let addressString = 'GPS Location Selected';
+          try {
+            // Free Nominatim OSM Geocoding Lookup
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {
+              headers: {
+                'User-Agent': 'autosphere-eco-app/1.0'
+              }
+            });
+            const data = await res.json();
+            if (data && data.display_name) {
+              addressString = data.display_name.split(',').slice(0, 3).join(', '); // Clean first 3 address components
+            }
+          } catch (err) {
+            console.warn('Geocoding error:', err);
+          }
+
           setLocation(prev => ({
             ...prev,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            address: 'Device GPS Coordinates'
+            latitude: lat,
+            longitude: lng,
+            address: addressString
           }));
-          alert('GPS coordinates updated from your device successfully!');
+          setAddress(addressString);
+          alert('GPS coordinates calibrated and address resolved successfully:\n' + addressString);
         },
         (error) => {
           // Fallback to random offset simulation
@@ -75,12 +130,7 @@ export default function LocationScreen() {
         <View style={globalStyles.card}>
           <Text style={styles.cardHeader}>🗺️ Active Dispatch Map</Text>
           <View style={styles.mapArea}>
-            <Text style={styles.mapEmoji}>📍</Text>
-            {/* Draw a simulated radius circle around coordinates */}
-            <View style={[styles.radiusCircle, { width: 60 + radius * 3, height: 60 + radius * 3, borderRadius: (60 + radius * 3)/2 }]} />
-            <Text style={styles.coordinates}>
-              lat: {location.latitude.toFixed(5)}, lng: {location.longitude.toFixed(5)}
-            </Text>
+            <InteractiveMap latitude={location.latitude} longitude={location.longitude} />
           </View>
           <TouchableOpacity style={[globalStyles.btnSecondary, { marginTop: 12 }]} onPress={handleSimulateGPS}>
             <Text style={globalStyles.btnSecondaryText}>Recalibrate GPS Coordinates</Text>

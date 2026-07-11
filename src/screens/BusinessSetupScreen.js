@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, SafeAreaView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, SafeAreaView, Platform, Image } from 'react-native';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
@@ -28,6 +28,51 @@ export default function BusinessSetupScreen() {
   const [serviceRadius, setServiceRadius] = useState(profile.serviceRadius.toString());
   const [serviceArea, setServiceArea] = useState(profile.serviceArea || '');
   const [error, setError] = useState('');
+
+  const handlePickImage = (type) => {
+    if (Platform.OS === 'web') {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const base64Data = event.target.result;
+            if (type === 'logo') {
+              uploadBusinessLogo(base64Data);
+            } else {
+              uploadProfilePhoto(base64Data);
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      input.click();
+    } else {
+      const presets = type === 'logo' 
+        ? ['🏢', '🛠️', '🚗', '📦', '🧼'] 
+        : ['👨‍✈️', '👩‍✈️', '👨‍🔧', '👩‍🔧', '👤'];
+      const randomPreset = presets[Math.floor(Math.random() * presets.length)];
+      if (type === 'logo') {
+        uploadBusinessLogo(randomPreset);
+      } else {
+        uploadProfilePhoto(randomPreset);
+      }
+      alert('Native Image Picker: Selected mock preset ' + randomPreset);
+    }
+  };
+
+  const renderImagePreview = (value, placeholder) => {
+    if (!value) {
+      return <Text style={styles.previewIconPlaceholder}>{placeholder}</Text>;
+    }
+    if (value.startsWith('data:image/') || value.startsWith('http')) {
+      return <Image source={{ uri: value }} style={styles.uploadedImagePreview} />;
+    }
+    return <Text style={styles.previewIcon}>{value}</Text>;
+  };
 
   const handleSave = () => {
     if (isBusiness) {
@@ -84,26 +129,17 @@ export default function BusinessSetupScreen() {
         <View style={styles.formCard}>
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          {/* Mock Photo / Logo Uploader */}
+          {/* Actual Photo / Logo Uploader */}
           <View style={styles.uploaderGroup}>
             <Text style={globalStyles.inputLabel}>
               {isBusiness ? 'Business Logo' : 'Profile Photo'}
             </Text>
             <View style={styles.uploaderRow}>
               <View style={styles.previewContainer}>
-                {isBusiness ? (
-                  profile.businessLogo ? (
-                    <Text style={styles.previewIcon}>{profile.businessLogo}</Text>
-                  ) : (
-                    <Text style={styles.previewIconPlaceholder}>🏢</Text>
-                  )
-                ) : (
-                  profile.profilePhoto ? (
-                    <Text style={styles.previewIcon}>{profile.profilePhoto}</Text>
-                  ) : (
-                    <Text style={styles.previewIconPlaceholder}>👤</Text>
-                  )
-                )}
+                {isBusiness 
+                  ? renderImagePreview(profile.businessLogo, '🏢')
+                  : renderImagePreview(profile.profilePhoto, '👤')
+                }
               </View>
               <View style={styles.uploaderButtons}>
                 <Text style={styles.uploaderInstructions}>
@@ -111,7 +147,16 @@ export default function BusinessSetupScreen() {
                     ? 'Upload a company logo icon for your customers to identify your business.' 
                     : 'Upload a clear profile photo of yourself.'}
                 </Text>
-                <View style={styles.mockSelectorRow}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5 }}>
+                  <TouchableOpacity 
+                    style={[globalStyles.btnPrimary, { marginTop: 0, paddingVertical: 8, paddingHorizontal: 12, marginRight: 10 }]}
+                    onPress={() => handlePickImage(isBusiness ? 'logo' : 'avatar')}
+                  >
+                    <Text style={[globalStyles.btnPrimaryText, { fontSize: 12 }]}>Upload Image</Text>
+                  </TouchableOpacity>
+                  <Text style={{ fontSize: 11, color: colors.textLight }}>Or select preset below:</Text>
+                </View>
+                <View style={[styles.mockSelectorRow, { marginTop: 8 }]}>
                   {isBusiness ? (
                     ['🏢', '🛠️', '🚗', '📦', '🧼'].map(logo => (
                       <TouchableOpacity 
@@ -335,6 +380,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
+    overflow: 'hidden',
+  },
+  uploadedImagePreview: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 32,
   },
   previewIcon: {
     fontSize: 32,

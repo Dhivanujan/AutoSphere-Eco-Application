@@ -20,25 +20,29 @@ export default function DocumentUploadScreen() {
     'Car Wash Service'
   ].includes(providerType);
 
-  const handleSimulateUpload = (key) => {
-    let mockFileName = '';
-    switch (key) {
-      case 'identityDoc':
-        mockFileName = 'government_id_card.pdf';
-        break;
-      case 'businessReg':
-        mockFileName = 'business_registration_license.pdf';
-        break;
-      case 'license':
-        mockFileName = isBusiness ? 'commercial_operating_permit.pdf' : 'driver_or_mechanic_license.pdf';
-        break;
-      case 'certificates':
-        mockFileName = 'insurance_and_liability_cert.pdf';
-        break;
-      default:
-        mockFileName = 'uploaded_doc.pdf';
+  const handlePickDocument = (key) => {
+    if (Platform.OS === 'web') {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.pdf,.doc,.docx,image/*';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          uploadDocument(key, file.name);
+        }
+      };
+      input.click();
+    } else {
+      const defaultDocs = {
+        identityDoc: 'my_government_id.pdf',
+        businessReg: 'business_incorporation_license.pdf',
+        license: 'operating_permit.pdf',
+        certificates: 'liability_insurance.pdf'
+      };
+      const fname = defaultDocs[key] || 'uploaded_doc.pdf';
+      uploadDocument(key, fname);
+      alert('Selected document: ' + fname);
     }
-    uploadDocument(key, mockFileName);
   };
 
   const handleSubmit = () => {
@@ -88,7 +92,7 @@ export default function DocumentUploadScreen() {
             </View>
             <TouchableOpacity 
               style={[styles.uploadBtn, documents.identityDoc ? styles.uploadedBtn : null]}
-              onPress={() => handleSimulateUpload('identityDoc')}
+              onPress={() => handlePickDocument('identityDoc')}
             >
               <Text style={[styles.uploadBtnText, documents.identityDoc ? styles.uploadedBtnText : null]}>
                 {documents.identityDoc ? 'Replace' : 'Upload File'}
@@ -106,7 +110,7 @@ export default function DocumentUploadScreen() {
               </View>
               <TouchableOpacity 
                 style={[styles.uploadBtn, documents.businessReg ? styles.uploadedBtn : null]}
-                onPress={() => handleSimulateUpload('businessReg')}
+                onPress={() => handlePickDocument('businessReg')}
               >
                 <Text style={[styles.uploadBtnText, documents.businessReg ? styles.uploadedBtnText : null]}>
                   {documents.businessReg ? 'Replace' : 'Upload File'}
@@ -126,7 +130,7 @@ export default function DocumentUploadScreen() {
             </View>
             <TouchableOpacity 
               style={[styles.uploadBtn, documents.license ? styles.uploadedBtn : null]}
-              onPress={() => handleSimulateUpload('license')}
+              onPress={() => handlePickDocument('license')}
             >
               <Text style={[styles.uploadBtnText, documents.license ? styles.uploadedBtnText : null]}>
                 {documents.license ? 'Replace' : 'Upload File'}
@@ -143,7 +147,7 @@ export default function DocumentUploadScreen() {
             </View>
             <TouchableOpacity 
               style={[styles.uploadBtn, documents.certificates ? styles.uploadedBtn : null]}
-              onPress={() => handleSimulateUpload('certificates')}
+              onPress={() => handlePickDocument('certificates')}
             >
               <Text style={[styles.uploadBtnText, documents.certificates ? styles.uploadedBtnText : null]}>
                 {documents.certificates ? 'Replace' : 'Upload File'}

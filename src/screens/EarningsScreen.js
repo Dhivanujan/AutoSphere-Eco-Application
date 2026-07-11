@@ -5,7 +5,7 @@ import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
 
 export default function EarningsScreen() {
-  const { earnings, setCurrentScreen } = useApp();
+  const { earnings, setCurrentScreen, requestPayout } = useApp();
 
   const completedTx = earnings.history.filter(tx => tx.status === 'Completed');
   const completedTxCount = completedTx.length;
@@ -27,8 +27,23 @@ export default function EarningsScreen() {
     return `Cycle: ${startOfWeek.toLocaleDateString('en-US', options)} - ${endOfWeek.toLocaleDateString('en-US', options)}`;
   };
 
-  const handleRequestPayout = () => {
-    alert('Requesting Bank Payout for: $' + earnings.weekly.toFixed(2) + '\nThis will settle in 2 business days.');
+  const handleRequestPayout = async () => {
+    if (earnings.weekly <= 0) {
+      alert('No unsettled balance available for payout!');
+      return;
+    }
+
+    const confirmMsg = `Do you want to transfer your unsettled balance of $${earnings.weekly.toFixed(2)} to your bank account?`;
+    const proceed = Platform.OS === 'web' ? window.confirm(confirmMsg) : true;
+    
+    if (proceed) {
+      const success = await requestPayout(earnings.weekly);
+      if (success) {
+        alert('Payout request submitted successfully!\nBalance transfer is now processing.');
+      } else {
+        alert('Payout transfer failed. Please try again.');
+      }
+    }
   };
 
   return (
