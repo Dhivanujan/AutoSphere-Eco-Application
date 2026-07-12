@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Tex
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { api } from '../services/api';
 
 // Reusable Live Map Component
 const InteractiveMap = ({ latitude, longitude }) => {
@@ -40,21 +41,40 @@ const InteractiveMap = ({ latitude, longitude }) => {
 };
 
 export default function LocationScreen() {
-  const { location, setLocation, setCurrentScreen, profile } = useApp();
+  const { location, setLocation, setCurrentScreen, profile, currentUser } = useApp();
 
   const [address, setAddress] = useState(profile.address || location.address);
   const [radius, setRadius] = useState(location.radius);
   const [liveTracking, setLiveTracking] = useState(location.liveTracking);
 
-  const handleSave = () => {
-    setLocation(prev => ({
-      ...prev,
-      address,
-      radius,
-      liveTracking
-    }));
-    alert('Location configuration updated successfully!');
-    setCurrentScreen('DASHBOARD');
+  const handleSave = async () => {
+    if (currentUser) {
+      try {
+        const updatedLocation = {
+          ...location,
+          address,
+          radius,
+          liveTracking
+        };
+        await api.profile.updateProfile(currentUser.uid, {
+          address,
+          location: updatedLocation
+        });
+        alert('Location configuration updated successfully!');
+        setCurrentScreen('DASHBOARD');
+      } catch (err) {
+        alert('Failed to save location settings: ' + err.message);
+      }
+    } else {
+      setLocation(prev => ({
+        ...prev,
+        address,
+        radius,
+        liveTracking
+      }));
+      alert('Location configuration updated successfully (local)!');
+      setCurrentScreen('DASHBOARD');
+    }
   };
 
   const handleSimulateGPS = () => {
@@ -115,7 +135,7 @@ export default function LocationScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={globalStyles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
@@ -125,7 +145,7 @@ export default function LocationScreen() {
         <View style={{ width: 50 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
         {/* Map Simulator Card */}
         <View style={globalStyles.card}>
           <Text style={styles.cardHeader}>🗺️ Active Dispatch Map</Text>

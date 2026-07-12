@@ -22,7 +22,7 @@ export default function TypeSelectionScreen() {
   const { selectProviderType, providerType, setCurrentScreen } = useApp();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={globalStyles.safeArea}>
       <View style={styles.header}>
         <Image 
           source={require('../../assets/logo.png')} 
@@ -30,7 +30,7 @@ export default function TypeSelectionScreen() {
           resizeMode="contain"
         />
       </View>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
         <View style={styles.introArea}>
           <Text style={styles.title}>What service do you provide?</Text>
           <Text style={styles.subtitle}>
@@ -134,9 +134,6 @@ const styles = StyleSheet.create({
       web: {
         cursor: 'pointer',
         transition: 'transform 0.15s, border-color 0.15s',
-        ':hover': {
-          borderColor: colors.primary,
-        }
       }
     })
   },

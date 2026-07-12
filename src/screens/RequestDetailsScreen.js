@@ -77,7 +77,7 @@ export default function RequestDetailsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={globalStyles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('REQUEST_LIST')}>
@@ -89,7 +89,7 @@ export default function RequestDetailsScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
         {/* Status Card */}
         <View style={globalStyles.card}>
           <View style={styles.statusRow}>
@@ -265,40 +265,47 @@ export default function RequestDetailsScreen() {
             <View style={{ width: 60 }} />
           </View>
 
-          <FlatList
-            data={activeChatMessages}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.chatMessagesList}
-            renderItem={({ item }) => {
-              const isMe = item.sender === 'Provider';
-              return (
-                <View style={[styles.msgWrapper, isMe ? styles.msgWrapperMe : styles.msgWrapperOther]}>
-                  <View style={[styles.msgBubble, isMe ? styles.msgBubbleMe : styles.msgBubbleOther]}>
-                    <Text style={[styles.msgText, isMe ? styles.msgTextMe : styles.msgTextOther]}>{item.text}</Text>
-                    <Text style={[styles.msgTime, isMe ? styles.msgTimeMe : styles.msgTimeOther]}>{item.time}</Text>
-                  </View>
-                </View>
-              );
-            }}
-            ref={flatListRef}
-            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-          />
-
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.chatInputRow}
+            style={{ flex: 1 }}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
           >
-            <TextInput
-              style={styles.chatInput}
-              value={messageText}
-              onChangeText={setMessageText}
-              placeholder="Type your message here..."
-              placeholderTextColor="#94A3B8"
-              onSubmitEditing={handleSend}
+            <FlatList
+              data={activeChatMessages}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.chatMessagesList}
+              renderItem={({ item }) => {
+                const isMe = item.sender === 'Provider';
+                return (
+                  <View style={[styles.msgWrapper, isMe ? styles.msgWrapperMe : styles.msgWrapperOther]}>
+                    <View style={[styles.msgBubble, isMe ? styles.msgBubbleMe : styles.msgBubbleOther]}>
+                      <Text style={[styles.msgText, isMe ? styles.msgTextMe : styles.msgTextOther]}>{item.text}</Text>
+                      <Text style={[styles.msgTime, isMe ? styles.msgTimeMe : styles.msgTimeOther]}>{item.time}</Text>
+                    </View>
+                  </View>
+                );
+              }}
+              ref={flatListRef}
+              onContentSizeChange={() => {
+                if (activeChatMessages && activeChatMessages.length > 0) {
+                  flatListRef.current?.scrollToEnd({ animated: true });
+                }
+              }}
             />
-            <TouchableOpacity style={styles.chatSendBtn} onPress={handleSend}>
-              <Text style={styles.chatSendBtnText}>Send</Text>
-            </TouchableOpacity>
+
+            <View style={styles.chatInputRow}>
+              <TextInput
+                style={styles.chatInput}
+                value={messageText}
+                onChangeText={setMessageText}
+                placeholder="Type your message here..."
+                placeholderTextColor="#94A3B8"
+                onSubmitEditing={handleSend}
+              />
+              <TouchableOpacity style={styles.chatSendBtn} onPress={handleSend}>
+                <Text style={styles.chatSendBtnText}>Send</Text>
+              </TouchableOpacity>
+            </View>
           </KeyboardAvoidingView>
         </SafeAreaView>
       </Modal>

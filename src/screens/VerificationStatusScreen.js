@@ -3,9 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Platform, Image
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { api } from '../services/api';
 
 export default function VerificationStatusScreen() {
-  const { documents, setCurrentScreen, providerType, profile, setDocuments, setNotifications } = useApp();
+  const { documents, setCurrentScreen, providerType, profile, setDocuments, setNotifications, currentUser } = useApp();
   const { status, reviewNotes } = documents;
 
   // Fix Defect: Prototype auto-approval timer (12 seconds)
@@ -27,12 +28,21 @@ export default function VerificationStatusScreen() {
   };
 
   // Helper for demo verification force-approving
-  const forceApprove = () => {
-    setDocuments(prev => ({
-      ...prev,
+  const forceApprove = async () => {
+    const updatedDocs = {
+      ...documents,
       status: 'Approved',
       reviewNotes: 'Verified via Quick Dev Tools.'
-    }));
+    };
+    if (currentUser) {
+      try {
+        await api.profile.updateProfile(currentUser.uid, { documents: updatedDocs });
+      } catch (err) {
+        console.warn('Force approve save failed:', err);
+      }
+    } else {
+      setDocuments(updatedDocs);
+    }
     setNotifications(prev => [
       {
         id: 'nt-sys-approve',
@@ -46,16 +56,25 @@ export default function VerificationStatusScreen() {
     ]);
   };
 
-  const forceReject = () => {
-    setDocuments(prev => ({
-      ...prev,
+  const forceReject = async () => {
+    const updatedDocs = {
+      ...documents,
       status: 'Rejected',
       reviewNotes: 'The business registration document is illegible. Please re-upload a clear copy.'
-    }));
+    };
+    if (currentUser) {
+      try {
+        await api.profile.updateProfile(currentUser.uid, { documents: updatedDocs });
+      } catch (err) {
+        console.warn('Force reject save failed:', err);
+      }
+    } else {
+      setDocuments(updatedDocs);
+    }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={globalStyles.safeArea}>
       <View style={styles.header}>
         <Image 
           source={require('../../assets/logo.png')} 
@@ -149,6 +168,8 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: 'space-between',
     alignItems: 'center',
+    backgroundColor: colors.background,
+    width: '100%',
   },
   statusBox: {
     flex: 1,

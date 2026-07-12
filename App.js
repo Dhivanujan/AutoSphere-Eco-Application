@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Platform, SafeAreaView } from 'react-native';
 import { AppProvider, useApp } from './src/services/AppContext';
 import { colors } from './src/theme/colors';
@@ -80,6 +80,7 @@ function RootNavigator() {
 // Developer Sandbox Overlay Panel
 function DevToolsOverlay() {
   const { 
+    currentUser,
     currentScreen, 
     setCurrentScreen, 
     providerType, 
@@ -121,8 +122,7 @@ function DevToolsOverlay() {
 
   const setVerification = async (statusValue) => {
     // Get current session/profile details to update verification
-    const session = await api.auth.getCurrentUser();
-    const uid = session?.uid;
+    const uid = currentUser?.uid;
     if (uid) {
       try {
         const reviewNotes = statusValue === 'Rejected' 
@@ -257,6 +257,15 @@ function DevToolsOverlay() {
 
 
 export default function App() {
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap';
+      document.head.appendChild(link);
+    }
+  }, []);
+
   return (
     <AppProvider>
       <View style={{ flex: 1, backgroundColor: colors.background }}>

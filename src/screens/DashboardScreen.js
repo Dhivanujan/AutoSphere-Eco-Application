@@ -245,7 +245,7 @@ export default function DashboardScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
         {/* Availability Quick Toggle Banner */}
         <View style={[styles.statusBanner, isOnline ? styles.bannerOnline : styles.bannerOffline]}>
           <Text style={styles.bannerText}>

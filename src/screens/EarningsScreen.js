@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Platform, Alert } from 'react-native';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
@@ -34,20 +34,34 @@ export default function EarningsScreen() {
     }
 
     const confirmMsg = `Do you want to transfer your unsettled balance of $${earnings.weekly.toFixed(2)} to your bank account?`;
-    const proceed = Platform.OS === 'web' ? window.confirm(confirmMsg) : true;
     
-    if (proceed) {
+    const performPayout = async () => {
       const success = await requestPayout(earnings.weekly);
       if (success) {
         alert('Payout request submitted successfully!\nBalance transfer is now processing.');
       } else {
         alert('Payout transfer failed. Please try again.');
       }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(confirmMsg)) {
+        await performPayout();
+      }
+    } else {
+      Alert.alert(
+        'Confirm Payout',
+        confirmMsg,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Transfer', onPress: performPayout }
+        ]
+      );
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={globalStyles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
@@ -57,7 +71,7 @@ export default function EarningsScreen() {
         <View style={{ width: 50 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
         {/* Main balance card */}
         <View style={[globalStyles.card, { backgroundColor: colors.secondary }]}>
           <Text style={styles.balanceLabel}>CURRENT BALANCE (UNSETTLED)</Text>

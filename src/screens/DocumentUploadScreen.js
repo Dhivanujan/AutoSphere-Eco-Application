@@ -65,7 +65,7 @@ export default function DocumentUploadScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={globalStyles.safeArea}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('BUSINESS_SETUP')}>
           <Text style={styles.backBtnText}>← Back</Text>
@@ -74,7 +74,7 @@ export default function DocumentUploadScreen() {
         <View style={{ width: 50 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
         <Text style={styles.title}>Verification Documents</Text>
         <Text style={styles.subtitle}>
           Upload high-quality photos or PDF copies of your licenses and credentials. This ensures safety and trust on the AutoSphere network.

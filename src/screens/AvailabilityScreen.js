@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Swi
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { api } from '../services/api';
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -13,7 +14,7 @@ const TIME_OPTIONS = [
 ];
 
 export default function AvailabilityScreen() {
-  const { isOnline, setIsOnline, profile, setProfile, setCurrentScreen } = useApp();
+  const { isOnline, setIsOnline, profile, setProfile, setCurrentScreen, currentUser } = useApp();
 
   const [workingDays, setWorkingDays] = useState(profile.workingDays || []);
   const [workingHours, setWorkingHours] = useState(profile.workingHours || '08:00 AM - 06:00 PM');
@@ -36,18 +37,31 @@ export default function AvailabilityScreen() {
     setWorkingHours(`${start} - ${end}`);
   };
 
-  const handleSave = () => {
-    setProfile(prev => ({
-      ...prev,
-      workingDays,
-      workingHours
-    }));
-    alert('Availability settings saved successfully!');
-    setCurrentScreen('DASHBOARD');
+  const handleSave = async () => {
+    if (currentUser) {
+      try {
+        await api.profile.updateProfile(currentUser.uid, {
+          workingDays,
+          workingHours
+        });
+        alert('Availability settings saved successfully!');
+        setCurrentScreen('DASHBOARD');
+      } catch (err) {
+        alert('Failed to save settings: ' + err.message);
+      }
+    } else {
+      setProfile(prev => ({
+        ...prev,
+        workingDays,
+        workingHours
+      }));
+      alert('Availability settings saved successfully (local)!');
+      setCurrentScreen('DASHBOARD');
+    }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={globalStyles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
@@ -57,7 +71,7 @@ export default function AvailabilityScreen() {
         <View style={{ width: 50 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
         {/* Main Status Toggle */}
         <View style={globalStyles.card}>
           <View style={styles.statusRow}>

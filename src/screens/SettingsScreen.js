@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Switch, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Switch, Platform, Alert } from 'react-native';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
@@ -16,14 +16,25 @@ export default function SettingsScreen() {
   };
 
   const handleDeactivate = () => {
-    const conf = confirm('Are you sure you want to deactivate your partner account? This action cannot be undone.');
-    if (conf) {
-      logout();
+    const msg = 'Are you sure you want to deactivate your partner account? This action cannot be undone.';
+    if (Platform.OS === 'web') {
+      if (window.confirm(msg)) {
+        logout();
+      }
+    } else {
+      Alert.alert(
+        'Deactivate Account',
+        msg,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Deactivate', style: 'destructive', onPress: logout }
+        ]
+      );
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={globalStyles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
@@ -33,7 +44,7 @@ export default function SettingsScreen() {
         <View style={{ width: 50 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
         
         {/* Account Shortcuts */}
         <View style={globalStyles.card}>

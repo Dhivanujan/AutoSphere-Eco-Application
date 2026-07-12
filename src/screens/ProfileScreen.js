@@ -3,9 +3,10 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, SafeAr
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { api } from '../services/api';
 
 export default function ProfileScreen() {
-  const { profile, setProfile, providerType, setCurrentScreen, uploadProfilePhoto, uploadBusinessLogo } = useApp();
+  const { profile, setProfile, providerType, setCurrentScreen, uploadProfilePhoto, uploadBusinessLogo, currentUser } = useApp();
 
   const isBusiness = [
     'Taxi Company',
@@ -71,23 +72,42 @@ export default function ProfileScreen() {
     return <Text style={styles.previewIcon}>{value}</Text>;
   };
 
-  const handleUpdate = () => {
-    setProfile(prev => ({
-      ...prev,
-      fullName,
-      email,
-      phone,
-      businessName,
-      address,
-      workingHours,
-      serviceArea
-    }));
-    alert('Profile updated successfully!');
-    setCurrentScreen('DASHBOARD');
+  const handleUpdate = async () => {
+    if (currentUser) {
+      const updatedFields = {
+        fullName,
+        email,
+        phone,
+        businessName,
+        address,
+        workingHours,
+        serviceArea
+      };
+      try {
+        await api.profile.updateProfile(currentUser.uid, updatedFields);
+        alert('Profile updated successfully!');
+        setCurrentScreen('DASHBOARD');
+      } catch (err) {
+        alert('Failed to update profile: ' + err.message);
+      }
+    } else {
+      setProfile(prev => ({
+        ...prev,
+        fullName,
+        email,
+        phone,
+        businessName,
+        address,
+        workingHours,
+        serviceArea
+      }));
+      alert('Profile updated successfully (local)!');
+      setCurrentScreen('DASHBOARD');
+    }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={globalStyles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
@@ -99,7 +119,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
         {/* Banner with profile initial */}
         <View style={styles.banner}>
           <View style={styles.bigAvatar}>
