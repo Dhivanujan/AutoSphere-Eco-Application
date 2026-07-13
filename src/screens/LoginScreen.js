@@ -20,7 +20,12 @@ export default function LoginScreen() {
   };
 
   const handleForgotPassword = () => {
-    alert('OTP reset instructions sent to: ' + email);
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address first to reset your password.');
+      return;
+    }
+    setError('');
+    alert('Password reset link and OTP instructions sent to: ' + email);
   };
 
   return (
