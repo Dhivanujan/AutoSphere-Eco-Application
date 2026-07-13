@@ -126,23 +126,23 @@ function DevToolsOverlay() {
 
     if (providerType === 'Garage') {
       serviceDetails = 'Radiator Coolant Flushing & System Check';
-      extraFields = { vehicleDetails: '2020 Chevrolet Traverse (Blue)' };
+      extraFields = { vehicleDetails: '2020 Toyota Prius (Blue)' };
     } else if (providerType === 'Spare Parts Seller') {
       serviceDetails = 'Engine Spark Plugs Core Kit Set';
       extraFields = { partNumber: 'SP-CORE-NGK' };
     } else {
-      serviceDetails = 'Premium Transit (5.8 miles)';
+      serviceDetails = 'Premium Transit (9.3 km)';
     }
 
     try {
       await api.requests.createMockDispatchOrder(
         providerType,
-        'Marcus Aurelius',
-        45.00,
+        'Kamal Perera',
+        3500.00,
         serviceDetails,
         extraFields
       );
-      alert(`🔔 Simulated new request received!\nCustomer: Marcus Aurelius\nCategory: ${providerType}`);
+      alert(`🔔 Simulated new request received!\nCustomer: Kamal Perera\nCategory: ${providerType}`);
     } catch (err) {
       alert('Mock dispatch order creation failed: ' + err.message);
     }

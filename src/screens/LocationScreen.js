@@ -130,7 +130,7 @@ export default function LocationScreen() {
               style={globalStyles.input}
               value={address}
               onChangeText={setAddress}
-              placeholder="e.g. 742 Evergreen Terrace, Springfield"
+              placeholder="e.g. No. 45, Kandy Road, Colombo"
             />
           </View>
         </View>
@@ -139,7 +139,7 @@ export default function LocationScreen() {
         <View style={globalStyles.card}>
           <View style={styles.rowBetween}>
             <Text style={styles.cardHeader}>🚗 Service dispatch radius</Text>
-            <Text style={styles.radiusVal}>{radius} Miles</Text>
+            <Text style={styles.radiusVal}>{radius} km</Text>
           </View>
           <Text style={styles.subtitle}>
             Adjust how far from your base location you are willing to accept customer bookings or dispatch services.
@@ -155,7 +155,7 @@ export default function LocationScreen() {
               {[5, 10, 15, 20, 30, 40, 50].map((val) => (
                 <TouchableOpacity key={val} style={styles.rangeBtn} onPress={() => setRadius(val)}>
                   <Text style={[styles.rangeBtnText, radius === val ? styles.rangeBtnTextActive : null]}>
-                    {val}m
+                    {val} km
                   </Text>
                 </TouchableOpacity>
               ))}

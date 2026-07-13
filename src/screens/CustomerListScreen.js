@@ -4,6 +4,7 @@ import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
 import { ScreenHeader, AnimatedScreen, EmptyState } from '../components';
+import { formatCurrency } from '../utils/helpers';
 
 export default function CustomerListScreen() {
   const { requests, providerType, setCurrentScreen } = useApp();
@@ -108,7 +109,7 @@ export default function CustomerListScreen() {
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
                   <Text style={styles.statLabel}>TOTAL SPENT</Text>
-                  <Text style={styles.statVal}>${cust.totalSpent.toFixed(2)}</Text>
+                  <Text style={styles.statVal}>{formatCurrency(cust.totalSpent)}</Text>
                 </View>
               </View>
 
@@ -123,7 +124,7 @@ export default function CustomerListScreen() {
                     <Text style={styles.historyDate}>{h.date}</Text>
                   </View>
                   <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={styles.historyAmount}>${h.amount.toFixed(2)}</Text>
+                    <Text style={styles.historyAmount}>{formatCurrency(h.amount)}</Text>
                     <Text style={[
                       styles.historyStatus, 
                       h.status === 'Completed' ? { color: colors.success } : { color: colors.pending }

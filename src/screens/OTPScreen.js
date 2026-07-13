@@ -55,7 +55,7 @@ export default function OTPScreen() {
               <Text style={styles.title}>OTP Verification</Text>
               <Text style={styles.subtitle}>
                 We sent a 4-digit verification code to your phone number: {'\n'}
-                <Text style={styles.phoneNumber}>{profile.phone || '+1 (555) 789-0123'}</Text>
+                <Text style={styles.phoneNumber}>{profile.phone || '+94 77 789 0123'}</Text>
               </Text>
             </View>
 

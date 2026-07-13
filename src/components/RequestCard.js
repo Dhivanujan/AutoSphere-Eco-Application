@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { colors } from '../theme/colors';
 import StatusBadge from './StatusBadge';
+import { formatCurrency } from '../utils/helpers';
 
 /**
  * RequestCard — Reusable request/job card showing customer, service, fare, status.
@@ -40,7 +41,7 @@ export default function RequestCard({ request, onPress }) {
 
       {/* Right: Fare & status */}
       <View style={styles.right}>
-        <Text style={styles.fare}>${fare?.toFixed(2)}</Text>
+        <Text style={styles.fare}>{formatCurrency(fare)}</Text>
         <StatusBadge status={status} size="small" />
       </View>
     </TouchableOpacity>

@@ -84,7 +84,7 @@ export default function RegisterScreen() {
                 <Text style={globalStyles.inputLabel}>Phone Number</Text>
                 <TextInput
                   style={globalStyles.input}
-                  placeholder="e.g. +1 (555) 789-0123"
+                  placeholder="e.g. +94 77 123 4567"
                   placeholderTextColor={colors.textLight}
                   value={phone}
                   onChangeText={setPhone}

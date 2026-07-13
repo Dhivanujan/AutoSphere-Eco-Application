@@ -4,6 +4,7 @@ import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
 import { ScreenHeader, AnimatedScreen, StatusBadge, InteractiveMap, EmptyState } from '../components';
+import { formatCurrency } from '../utils/helpers';
 
 export default function RequestDetailsScreen() {
   const { 
@@ -101,7 +102,7 @@ export default function RequestDetailsScreen() {
             <View style={styles.metaRow}>
               <View>
                 <Text style={styles.label}>ESTIMATED PAYOUT</Text>
-                <Text style={styles.fareAmount}>${fare.toFixed(2)}</Text>
+                <Text style={styles.fareAmount}>{formatCurrency(fare)}</Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
                 <Text style={styles.label}>TIMELINE</Text>
@@ -173,7 +174,7 @@ export default function RequestDetailsScreen() {
             </View>
           )}
           <View style={{ marginTop: 16 }}>
-            <InteractiveMap latitude={37.7749} longitude={-122.4194} height={120} label="Live GPS Navigation Routing" />
+            <InteractiveMap latitude={6.9271} longitude={79.8612} height={120} label="Live GPS Navigation Routing" />
           </View>
         </View>
 

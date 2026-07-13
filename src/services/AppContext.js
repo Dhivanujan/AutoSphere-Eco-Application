@@ -63,10 +63,10 @@ export const AppProvider = ({ children }) => {
 
   // Location configuration
   const [location, setLocation] = useState({
-    latitude: 37.7749,
-    longitude: -122.4194,
-    address: 'Market St, San Francisco, CA',
-    radius: 10,
+    latitude: 6.9271,
+    longitude: 79.8612,
+    address: 'Galle Face Green, Colombo 03, Sri Lanka',
+    radius: 25,
     liveTracking: true
   });
 

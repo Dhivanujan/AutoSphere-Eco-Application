@@ -206,7 +206,7 @@ export default function BusinessSetupScreen() {
               style={globalStyles.input}
               value={phone}
               onChangeText={setPhone}
-              placeholder="e.g. +1 (555) 789-0123"
+              placeholder="e.g. +94 77 123 4567"
               keyboardType="phone-pad"
             />
           </View>
@@ -220,7 +220,7 @@ export default function BusinessSetupScreen() {
                   style={globalStyles.input}
                   value={businessName}
                   onChangeText={setBusinessName}
-                  placeholder="e.g. Carter Auto Repairs"
+                  placeholder="e.g. Ranasinghe Auto Repairs"
                 />
               </View>
 
@@ -230,7 +230,7 @@ export default function BusinessSetupScreen() {
                   style={globalStyles.input}
                   value={address}
                   onChangeText={setAddress}
-                  placeholder="e.g. 742 Evergreen Terrace, Springfield"
+                  placeholder="e.g. No. 45, Kandy Road, Colombo"
                 />
               </View>
 
@@ -248,7 +248,7 @@ export default function BusinessSetupScreen() {
 
           {/* Service Area Specifics */}
           <View style={globalStyles.inputGroup}>
-            <Text style={globalStyles.inputLabel}>Service radius (in miles)</Text>
+            <Text style={globalStyles.inputLabel}>Service radius (in km)</Text>
             <TextInput
               style={globalStyles.input}
               value={serviceRadius}

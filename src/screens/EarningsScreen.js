@@ -4,6 +4,7 @@ import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
 import { ScreenHeader, AnimatedScreen } from '../components';
+import { formatCurrency } from '../utils/helpers';
 
 export default function EarningsScreen() {
   const { earnings, setCurrentScreen, requestPayout } = useApp();
@@ -28,13 +29,13 @@ export default function EarningsScreen() {
     return `Cycle: ${startOfWeek.toLocaleDateString('en-US', options)} - ${endOfWeek.toLocaleDateString('en-US', options)}`;
   };
 
-  const handleRequestPayout = async () => {
+  const handleRequestPayout = () => {
     if (earnings.weekly <= 0) {
       alert('No unsettled balance available for payout!');
       return;
     }
 
-    const confirmMsg = `Do you want to transfer your unsettled balance of $${earnings.weekly.toFixed(2)} to your bank account?`;
+    const confirmMsg = `Do you want to transfer your unsettled balance of ${formatCurrency(earnings.weekly)} to your bank account?`;
     
     const performPayout = async () => {
       const success = await requestPayout(earnings.weekly);
@@ -47,7 +48,7 @@ export default function EarningsScreen() {
 
     if (Platform.OS === 'web') {
       if (window.confirm(confirmMsg)) {
-        await performPayout();
+        performPayout();
       }
     } else {
       Alert.alert(
@@ -74,23 +75,23 @@ export default function EarningsScreen() {
         {/* Main balance card */}
         <View style={[globalStyles.card, { backgroundColor: colors.secondary }]}>
           <Text style={styles.balanceLabel}>CURRENT BALANCE (UNSETTLED)</Text>
-          <Text style={styles.balanceAmount}>${earnings.weekly.toFixed(2)}</Text>
+          <Text style={styles.balanceAmount}>{formatCurrency(earnings.weekly)}</Text>
           <Text style={styles.balanceSub}>{getDynamicWeeklyCycle()}</Text>
           
           <TouchableOpacity style={styles.payoutBtn} onPress={handleRequestPayout}>
             <Text style={styles.payoutBtnText}>Payout to Bank Account</Text>
           </TouchableOpacity>
         </View>
-
+ 
         {/* Earnings breakdown grid */}
         <View style={styles.breakdownRow}>
           <View style={[globalStyles.card, styles.breakdownCard]}>
             <Text style={styles.breakdownLabel}>Today</Text>
-            <Text style={styles.breakdownVal}>${earnings.daily.toFixed(2)}</Text>
+            <Text style={styles.breakdownVal}>{formatCurrency(earnings.daily)}</Text>
           </View>
           <View style={[globalStyles.card, styles.breakdownCard]}>
             <Text style={styles.breakdownLabel}>This Month</Text>
-            <Text style={styles.breakdownVal}>${earnings.monthly.toFixed(2)}</Text>
+            <Text style={styles.breakdownVal}>{formatCurrency(earnings.monthly)}</Text>
           </View>
         </View>
 
@@ -106,7 +107,7 @@ export default function EarningsScreen() {
                 <Text style={styles.reportLabel}>Completed Services</Text>
                 <Text style={styles.reportDesc}>{completedTxCount} jobs successfully completed</Text>
               </View>
-              <Text style={[styles.reportVal, { color: colors.success }]}>+${completedTxSum.toFixed(2)}</Text>
+              <Text style={[styles.reportVal, { color: colors.success }]}>+{formatCurrency(completedTxSum)}</Text>
             </View>
 
             <View style={styles.reportItem}>
@@ -117,7 +118,7 @@ export default function EarningsScreen() {
                 <Text style={styles.reportLabel}>Payments Received (Settled)</Text>
                 <Text style={styles.reportDesc}>Transferred successfully to bank account</Text>
               </View>
-              <Text style={[styles.reportVal, { color: colors.info }]}>${settledSum.toFixed(2)}</Text>
+              <Text style={[styles.reportVal, { color: colors.info }]}>{formatCurrency(settledSum)}</Text>
             </View>
 
             <View style={styles.reportItem}>
@@ -128,7 +129,7 @@ export default function EarningsScreen() {
                 <Text style={styles.reportLabel}>Pending Payments (Unsettled)</Text>
                 <Text style={styles.reportDesc}>Accrued balance awaiting weekly payout</Text>
               </View>
-              <Text style={[styles.reportVal, { color: colors.pending }]}>${pendingSum.toFixed(2)}</Text>
+              <Text style={[styles.reportVal, { color: colors.pending }]}>{formatCurrency(pendingSum)}</Text>
             </View>
           </View>
         </View>
@@ -138,18 +139,18 @@ export default function EarningsScreen() {
           <Text style={styles.sectionHeader}>📊 Weekly Activity Chart</Text>
           <View style={styles.chartContainer}>
             {[
-              { day: 'Mon', val: 80, valText: '$80' },
-              { day: 'Tue', val: 120, valText: '$120' },
-              { day: 'Wed', val: 180, valText: '$180' },
-              { day: 'Thu', val: 95, valText: '$95' },
-              { day: 'Fri', val: 210, valText: '$210' },
-              { day: 'Sat', val: 0, valText: '$0' },
-              { day: 'Sun', val: 0, valText: '$0' },
+              { day: 'Mon', val: 8000, valText: 'Rs. 8k' },
+              { day: 'Tue', val: 12000, valText: 'Rs. 12k' },
+              { day: 'Wed', val: 18000, valText: 'Rs. 18k' },
+              { day: 'Thu', val: 9500, valText: 'Rs. 9.5k' },
+              { day: 'Fri', val: 21000, valText: 'Rs. 21k' },
+              { day: 'Sat', val: 0, valText: 'Rs. 0' },
+              { day: 'Sun', val: 0, valText: 'Rs. 0' },
             ].map((d) => (
               <View key={d.day} style={styles.chartBarCol}>
                 <Text style={styles.chartBarValText}>{d.valText}</Text>
                 <View style={styles.chartBarTrack}>
-                  <View style={[styles.chartBarFill, { height: `${(d.val / 220) * 100}%` }]} />
+                  <View style={[styles.chartBarFill, { height: `${(d.val / 22000) * 100}%` }]} />
                 </View>
                 <Text style={styles.chartBarLabel}>{d.day}</Text>
               </View>
@@ -169,7 +170,7 @@ export default function EarningsScreen() {
               </View>
               <View style={{ alignItems: 'flex-end' }}>
                 <Text style={[styles.txAmount, tx.amount < 0 ? styles.txNegative : null]}>
-                  {tx.amount > 0 ? `+$${tx.amount.toFixed(2)}` : `-$${Math.abs(tx.amount).toFixed(2)}`}
+                  {tx.amount > 0 ? `+${formatCurrency(tx.amount)}` : `-${formatCurrency(Math.abs(tx.amount))}`}
                 </Text>
                 <Text style={styles.txStatus}>{tx.status}</Text>
               </View>

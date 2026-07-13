@@ -4,6 +4,7 @@ import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
 import { MetricCard, EmptyState, RequestCard, AnimatedScreen, InteractiveMap } from '../components';
+import { formatCurrency } from '../utils/helpers';
 
 export default function DashboardScreen() {
   const { 
@@ -230,7 +231,7 @@ export default function DashboardScreen() {
           <View style={styles.metricsRow}>
             <MetricCard
               label="Earnings"
-              value={`$${earnings.weekly.toFixed(2)}`}
+              value={formatCurrency(earnings.weekly)}
               sub="Unsettled"
               onPress={() => setCurrentScreen('EARNINGS')}
             />

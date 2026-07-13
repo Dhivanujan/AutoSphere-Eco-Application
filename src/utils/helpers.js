@@ -33,7 +33,7 @@ export const setOfflineData = async (key, data) => {
  * @param {number} value 
  */
 export const formatCurrency = (value) => {
-  return `$${parseFloat(value || 0).toFixed(2)}`;
+  return `Rs. ${parseFloat(value || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 /**
