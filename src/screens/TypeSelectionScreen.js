@@ -26,7 +26,7 @@ export default function TypeSelectionScreen() {
     <SafeAreaView style={globalStyles.safeArea}>
       <View style={styles.header}>
         <Image 
-          source={require('../../assets/logo.png')} 
+          source={require('../assets/logo.png')} 
           style={styles.headerLogo} 
           resizeMode="contain"
         />

@@ -39,7 +39,7 @@ export default function LoginScreen() {
           <AnimatedScreen animation="fade">
             <View style={styles.headerArea}>
               <Image 
-                source={require('../../assets/logo.png')} 
+                source={require('../assets/logo.png')} 
                 style={styles.logoImage} 
                 resizeMode="contain"
               />
