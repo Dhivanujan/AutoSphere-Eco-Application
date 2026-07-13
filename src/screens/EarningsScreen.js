@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Pla
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { ScreenHeader, AnimatedScreen } from '../components';
 
 export default function EarningsScreen() {
   const { earnings, setCurrentScreen, requestPayout } = useApp();
@@ -62,16 +63,14 @@ export default function EarningsScreen() {
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
-          <Text style={styles.backBtnText}>← Home</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Earnings Report</Text>
-        <View style={{ width: 50 }} />
-      </View>
+      <ScreenHeader
+        title="Earnings Report"
+        backLabel="← Home"
+        onBack={() => setCurrentScreen('DASHBOARD')}
+      />
 
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
+        <AnimatedScreen animation="fade">
         {/* Main balance card */}
         <View style={[globalStyles.card, { backgroundColor: colors.secondary }]}>
           <Text style={styles.balanceLabel}>CURRENT BALANCE (UNSETTLED)</Text>
@@ -177,6 +176,7 @@ export default function EarningsScreen() {
             </View>
           ))}
         </View>
+        </AnimatedScreen>
       </ScrollView>
     </SafeAreaView>
   );

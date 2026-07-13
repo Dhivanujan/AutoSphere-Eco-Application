@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, Platform } from 'react-native';
 import { colors } from '../theme/colors';
 import { useApp } from '../services/AppContext';
+import { AnimatedScreen } from '../components';
 
 const { width } = Dimensions.get('window');
 
@@ -41,44 +42,48 @@ export default function IntroScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.skipContainer}>
-        {activeSlide < slides.length - 1 ? (
-          <TouchableOpacity onPress={handleSkip}>
-            <Text style={styles.skipText}>Skip</Text>
-          </TouchableOpacity>
-        ) : (
-          <View style={{ height: 20 }} />
-        )}
-      </View>
+      <AnimatedScreen animation="fade">
+        <View style={{ flex: 1, justifyContent: 'space-between' }}>
+          <View style={styles.skipContainer}>
+            {activeSlide < slides.length - 1 ? (
+              <TouchableOpacity onPress={handleSkip}>
+                <Text style={styles.skipText}>Skip</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={{ height: 20 }} />
+            )}
+          </View>
 
-      {/* Main Slide Carousel Area */}
-      <View style={styles.slideArea}>
-        <Text style={styles.slideIcon}>{slides[activeSlide].icon}</Text>
-        <Text style={styles.slideTitle}>{slides[activeSlide].title}</Text>
-        <Text style={styles.slideDescription}>{slides[activeSlide].description}</Text>
-      </View>
+          {/* Main Slide Carousel Area */}
+          <View style={styles.slideArea}>
+            <Text style={styles.slideIcon}>{slides[activeSlide].icon}</Text>
+            <Text style={styles.slideTitle}>{slides[activeSlide].title}</Text>
+            <Text style={styles.slideDescription}>{slides[activeSlide].description}</Text>
+          </View>
 
-      {/* Slide Indicators */}
-      <View style={styles.indicatorContainer}>
-        {slides.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.indicator,
-              activeSlide === index ? styles.indicatorActive : null
-            ]}
-          />
-        ))}
-      </View>
+          {/* Slide Indicators */}
+          <View style={styles.indicatorContainer}>
+            {slides.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.indicator,
+                  activeSlide === index ? styles.indicatorActive : null
+                ]}
+              />
+            ))}
+          </View>
 
-      {/* Bottom Actions */}
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-          <Text style={styles.nextButtonText}>
-            {activeSlide === slides.length - 1 ? 'Get Started' : 'Next'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          {/* Bottom Actions */}
+          <View style={styles.footer}>
+            <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+              <Text style={styles.nextButtonText}>
+                {activeSlide === slides.length - 1 ? 'Get Started' : 'Next'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </AnimatedScreen>
     </SafeAreaView>
   );
 }

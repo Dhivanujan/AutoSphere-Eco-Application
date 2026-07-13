@@ -3,41 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Pla
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
-
-// Reusable Live Map Component
-const InteractiveMap = ({ latitude, longitude }) => {
-  if (Platform.OS === 'web') {
-    const mapUrl = `https://maps.google.com/maps?q=${latitude},${longitude}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
-    return (
-      <iframe
-        src={mapUrl}
-        style={{
-          width: '100%',
-          height: '100%',
-          border: 'none',
-          borderRadius: '10px'
-        }}
-        title="Interactive GPS Map"
-      />
-    );
-  } else {
-    const staticMapUrl = `https://static-maps.yandex.ru/1.x/?ll=${longitude},${latitude}&spn=0.016,0.016&l=map&size=450,200`;
-    return (
-      <TouchableOpacity 
-        style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
-        onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`)}
-      >
-        <Image 
-          source={{ uri: staticMapUrl }} 
-          style={{ width: '100%', height: '100%', borderRadius: 10 }} 
-        />
-        <View style={{ position: 'absolute', backgroundColor: 'rgba(13, 17, 23, 0.75)', padding: 6, borderRadius: 6 }}>
-          <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>📍 Open in System Maps ↗</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  }
-};
+import { MetricCard, EmptyState, RequestCard, AnimatedScreen, InteractiveMap } from '../components';
 
 export default function DashboardScreen() {
   const { 
@@ -246,61 +212,65 @@ export default function DashboardScreen() {
       </View>
 
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
-        {/* Availability Quick Toggle Banner */}
-        <View style={[styles.statusBanner, isOnline ? styles.bannerOnline : styles.bannerOffline]}>
-          <Text style={styles.bannerText}>
-            Status: <Text style={{ fontWeight: 'bold' }}>{isOnline ? 'ONLINE' : 'OFFLINE'}</Text>
-          </Text>
-          <TouchableOpacity 
-            style={[styles.toggleBtn, isOnline ? styles.toggleBtnOnline : styles.toggleBtnOffline]}
-            onPress={() => setIsOnline(!isOnline)}
-          >
-            <Text style={styles.toggleBtnText}>{isOnline ? 'Go Offline' : 'Go Online'}</Text>
-          </TouchableOpacity>
-        </View>
+        <AnimatedScreen animation="fade">
+          {/* Availability Quick Toggle Banner */}
+          <View style={[styles.statusBanner, isOnline ? styles.bannerOnline : styles.bannerOffline]}>
+            <Text style={styles.bannerText}>
+              Status: <Text style={{ fontWeight: 'bold' }}>{isOnline ? 'ONLINE' : 'OFFLINE'}</Text>
+            </Text>
+            <TouchableOpacity 
+              style={[styles.toggleBtn, isOnline ? styles.toggleBtnOnline : styles.toggleBtnOffline]}
+              onPress={() => setIsOnline(!isOnline)}
+            >
+              <Text style={styles.toggleBtnText}>{isOnline ? 'Go Offline' : 'Go Online'}</Text>
+            </TouchableOpacity>
+          </View>
 
-        {/* Metrics Grid */}
-        <View style={styles.metricsRow}>
-          <TouchableOpacity style={styles.metricCard} onPress={() => setCurrentScreen('EARNINGS')}>
-            <Text style={styles.metricLabel}>Earnings</Text>
-            <Text style={styles.metricVal}>${earnings.weekly.toFixed(2)}</Text>
-            <Text style={styles.metricSub}>Unsettled</Text>
-          </TouchableOpacity>
+          {/* Metrics Grid */}
+          <View style={styles.metricsRow}>
+            <MetricCard
+              label="Earnings"
+              value={`$${earnings.weekly.toFixed(2)}`}
+              sub="Unsettled"
+              onPress={() => setCurrentScreen('EARNINGS')}
+            />
+            <MetricCard
+              label="Active Jobs"
+              value={activeJobsCount}
+              sub={`${pendingRequestsCount} Pending`}
+              onPress={() => setCurrentScreen('REQUEST_LIST')}
+            />
+            <MetricCard
+              label="Completed"
+              value={completedJobsCount}
+              sub="All Time"
+              onPress={() => setCurrentScreen('EARNINGS')}
+            />
+          </View>
 
-          <TouchableOpacity style={styles.metricCard} onPress={() => setCurrentScreen('REQUEST_LIST')}>
-            <Text style={styles.metricLabel}>Active Jobs</Text>
-            <Text style={styles.metricVal}>{activeJobsCount}</Text>
-            <Text style={styles.metricSub}>{pendingRequestsCount} Pending</Text>
-          </TouchableOpacity>
+          <View style={[styles.metricsRow, { marginTop: 8 }]}>
+            <MetricCard
+              label="Total Requests"
+              value={totalRequestsCount}
+              sub="Received"
+              onPress={() => setCurrentScreen('REQUEST_LIST')}
+            />
+            <MetricCard
+              label="Rating"
+              value={averageRating}
+              icon="⭐"
+              sub={`${reviews.length} Reviews`}
+              onPress={() => setCurrentScreen('REVIEWS')}
+            />
+            <MetricCard
+              label="Alerts"
+              value={unreadNotifications}
+              sub="Unread"
+              onPress={() => setCurrentScreen('NOTIFICATIONS')}
+            />
+          </View>
 
-          <TouchableOpacity style={styles.metricCard} onPress={() => setCurrentScreen('EARNINGS')}>
-            <Text style={styles.metricLabel}>Completed</Text>
-            <Text style={styles.metricVal}>{completedJobsCount}</Text>
-            <Text style={styles.metricSub}>All Time</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={[styles.metricsRow, { marginTop: 8 }]}>
-          <TouchableOpacity style={styles.metricCard} onPress={() => setCurrentScreen('REQUEST_LIST')}>
-            <Text style={styles.metricLabel}>Total Requests</Text>
-            <Text style={styles.metricVal}>{totalRequestsCount}</Text>
-            <Text style={styles.metricSub}>Received</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.metricCard} onPress={() => setCurrentScreen('REVIEWS')}>
-            <Text style={styles.metricLabel}>Rating</Text>
-            <Text style={styles.metricVal}>⭐ {averageRating}</Text>
-            <Text style={styles.metricSub}>{reviews.length} Reviews</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.metricCard} onPress={() => setCurrentScreen('NOTIFICATIONS')}>
-            <Text style={styles.metricLabel}>Alerts</Text>
-            <Text style={styles.metricVal}>{unreadNotifications}</Text>
-            <Text style={styles.metricSub}>Unread</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Dynamic Category Specific Content */}
+          {/* Dynamic Category Specific Content */}
         {['Taxi Driver', 'Taxi Company', 'Bus Operator', 'Vehicle Rental', 'Fuel Service', 'Emergency Provider'].includes(providerType) && renderDriverWidget()}
         {['Garage', 'Service Station', 'Car Wash Service', 'Parking Service'].includes(providerType) && renderGarageWidget()}
         {['Spare Parts Seller'].includes(providerType) && renderSellerWidget()}
@@ -332,34 +302,18 @@ export default function DashboardScreen() {
             </View>
 
             {activeRequests.length === 0 ? (
-              <View style={styles.emptyRequests}>
-                <Text style={styles.emptyIcon}>📭</Text>
-                <Text style={styles.emptyText}>No active or pending requests</Text>
-                <Text style={styles.emptySubtext}>When customers book your service, details will appear here.</Text>
-              </View>
+              <EmptyState
+                icon="📭"
+                title="No active or pending requests"
+                subtitle="When customers book your service, details will appear here."
+              />
             ) : (
               activeRequests.map((req) => (
-                <TouchableOpacity 
+                <RequestCard 
                   key={req.id} 
-                  style={styles.requestItem}
+                  request={req}
                   onPress={() => navigateToRequest(req)}
-                >
-                  <View style={styles.requestLeft}>
-                    <Text style={styles.reqCustomerName}>{req.customerName}</Text>
-                    <Text style={styles.reqDetails} numberOfLines={1}>{req.serviceDetails}</Text>
-                    <Text style={styles.reqLocation} numberOfLines={1}>📍 {req.pickupLocation}</Text>
-                  </View>
-                  <View style={styles.requestRight}>
-                    <Text style={styles.reqFare}>${req.fare.toFixed(2)}</Text>
-                    <View style={[
-                      styles.statusIndicator,
-                      req.status === 'Pending' ? styles.indicatorPending : 
-                      req.status === 'Accepted' ? styles.indicatorAccepted : styles.indicatorActive
-                    ]}>
-                      <Text style={styles.indicatorLabel}>{req.status}</Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
+                />
               ))
             )}
           </View>
@@ -408,6 +362,7 @@ export default function DashboardScreen() {
             <Text style={styles.navText}>Settings</Text>
           </TouchableOpacity>
         </View>
+        </AnimatedScreen>
       </ScrollView>
     </SafeAreaView>
   );

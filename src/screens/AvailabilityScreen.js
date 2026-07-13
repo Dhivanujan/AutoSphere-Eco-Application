@@ -4,6 +4,7 @@ import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
 import { api } from '../services/api';
+import { ScreenHeader, AnimatedScreen } from '../components';
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -62,16 +63,14 @@ export default function AvailabilityScreen() {
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
-          <Text style={styles.backBtnText}>← Home</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Availability Settings</Text>
-        <View style={{ width: 50 }} />
-      </View>
+      <ScreenHeader
+        title="Availability Settings"
+        backLabel="← Home"
+        onBack={() => setCurrentScreen('DASHBOARD')}
+      />
 
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
+        <AnimatedScreen animation="fade">
         {/* Main Status Toggle */}
         <View style={globalStyles.card}>
           <View style={styles.statusRow}>
@@ -208,6 +207,7 @@ export default function AvailabilityScreen() {
         <TouchableOpacity style={globalStyles.btnPrimary} onPress={handleSave}>
           <Text style={globalStyles.btnPrimaryText}>Save Schedule</Text>
         </TouchableOpacity>
+        </AnimatedScreen>
       </ScrollView>
     </SafeAreaView>
   );

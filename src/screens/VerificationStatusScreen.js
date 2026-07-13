@@ -4,6 +4,7 @@ import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
 import { api } from '../services/api';
+import { ScreenHeader, AnimatedScreen } from '../components';
 
 export default function VerificationStatusScreen() {
   const { documents, setCurrentScreen, providerType, profile, setDocuments, setNotifications, currentUser } = useApp();
@@ -75,15 +76,14 @@ export default function VerificationStatusScreen() {
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
-      <View style={styles.header}>
-        <Image 
-          source={require('../../assets/logo.png')} 
-          style={styles.headerLogo} 
-          resizeMode="contain"
-        />
-      </View>
+      <ScreenHeader
+        title="Verification Status"
+        backLabel="← Back"
+        onBack={() => setCurrentScreen('DOCUMENT_UPLOAD')}
+      />
 
-      <View style={styles.content}>
+      <AnimatedScreen animation="fade">
+        <View style={styles.content}>
         <View style={styles.statusBox}>
           {status === 'Pending' && (
             <>
@@ -143,6 +143,7 @@ export default function VerificationStatusScreen() {
           <Text style={styles.footerValue}>{providerType}</Text>
         </View>
       </View>
+      </AnimatedScreen>
     </SafeAreaView>
   );
 }

@@ -1,12 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Image, ActivityIndicator } from 'react-native';
 import { colors } from '../theme/colors';
 import { useApp } from '../services/AppContext';
 
 export default function SplashScreen() {
   const { setCurrentScreen } = useApp();
-  const fadeAnim = new Animated.Value(0);
-  const scaleAnim = new Animated.Value(0.9);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -44,7 +44,7 @@ export default function SplashScreen() {
       <View style={styles.footer}>
         <ActivityIndicator size="small" color={colors.primary} style={{ marginBottom: 20 }} />
         <Text style={styles.footerText}>Secure Digital Logistics Ecosystem</Text>
-        <Text style={styles.versionText}>v1.0.0 (Expo SDK 57)</Text>
+        <Text style={styles.versionText}>v1.0.0</Text>
       </View>
     </View>
   );

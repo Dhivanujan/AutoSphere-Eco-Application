@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Pla
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { ScreenHeader, AnimatedScreen, EmptyState } from '../components';
 
 export default function NotificationsScreen() {
   const { notifications, markNotificationRead, clearAllNotifications, setCurrentScreen } = useApp();
@@ -26,49 +27,44 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
-          <Text style={styles.backBtnText}>← Home</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notifications</Text>
-        {notifications.length > 0 ? (
-          <TouchableOpacity style={styles.backBtn} onPress={clearAllNotifications}>
-            <Text style={styles.clearBtnText}>Clear All</Text>
-          </TouchableOpacity>
-        ) : (
-          <View style={{ width: 50 }} />
-        )}
-      </View>
+      <ScreenHeader
+        title="Notifications"
+        backLabel="← Home"
+        onBack={() => setCurrentScreen('DASHBOARD')}
+        rightLabel={notifications.length > 0 ? "Clear All" : undefined}
+        onRight={notifications.length > 0 ? clearAllNotifications : undefined}
+      />
 
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
-        {notifications.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyIcon}>🔔</Text>
-            <Text style={styles.emptyText}>All caught up!</Text>
-            <Text style={styles.emptySubtext}>New alerts and booking updates will appear here.</Text>
-          </View>
-        ) : (
-          notifications.map((nt) => (
-            <TouchableOpacity 
-              key={nt.id} 
-              style={[styles.notificationCard, !nt.read ? styles.unreadCard : null]}
-              onPress={() => handleNotificationClick(nt)}
-            >
-              <View style={styles.typeIconBox}>
-                <Text style={styles.typeIcon}>{getEmojiForType(nt.type)}</Text>
-              </View>
-              <View style={{ flex: 1, paddingRight: 10 }}>
-                <View style={styles.cardHeaderRow}>
-                  <Text style={[styles.ntTitle, !nt.read ? styles.unreadText : null]}>{nt.title}</Text>
-                  {!nt.read && <View style={styles.unreadBadge} />}
+        <AnimatedScreen animation="fade">
+          {notifications.length === 0 ? (
+            <EmptyState
+              icon="🔔"
+              title="All caught up!"
+              subtitle="New alerts and booking updates will appear here."
+            />
+          ) : (
+            notifications.map((nt) => (
+              <TouchableOpacity 
+                key={nt.id} 
+                style={[styles.notificationCard, !nt.read ? styles.unreadCard : null]}
+                onPress={() => handleNotificationClick(nt)}
+              >
+                <View style={styles.typeIconBox}>
+                  <Text style={styles.typeIcon}>{getEmojiForType(nt.type)}</Text>
                 </View>
-                <Text style={styles.ntBody}>{nt.body}</Text>
-                <Text style={styles.ntTime}>{nt.time}</Text>
-              </View>
-            </TouchableOpacity>
-          ))
-        )}
+                <View style={{ flex: 1, paddingRight: 10 }}>
+                  <View style={styles.cardHeaderRow}>
+                    <Text style={[styles.ntTitle, !nt.read ? styles.unreadText : null]}>{nt.title}</Text>
+                    {!nt.read && <View style={styles.unreadBadge} />}
+                  </View>
+                  <Text style={styles.ntBody}>{nt.body}</Text>
+                  <Text style={styles.ntTime}>{nt.time}</Text>
+                </View>
+              </TouchableOpacity>
+            ))
+          )}
+        </AnimatedScreen>
       </ScrollView>
     </SafeAreaView>
   );

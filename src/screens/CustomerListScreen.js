@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Tex
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { ScreenHeader, AnimatedScreen, EmptyState } from '../components';
 
 export default function CustomerListScreen() {
   const { requests, providerType, setCurrentScreen } = useApp();
@@ -51,34 +52,32 @@ export default function CustomerListScreen() {
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
-          <Text style={styles.backBtnText}>← Home</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Customers</Text>
-        <View style={{ width: 50 }} />
-      </View>
+      <ScreenHeader
+        title="My Customers"
+        backLabel="← Home"
+        onBack={() => setCurrentScreen('DASHBOARD')}
+      />
 
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
-        {/* Search Input */}
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by customer name or phone..."
-            value={search}
-            onChangeText={setSearch}
-            placeholderTextColor={colors.textLight}
-          />
-        </View>
-
-        {filteredCustomers.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyIcon}>👥</Text>
-            <Text style={styles.emptyText}>No customers found</Text>
-            <Text style={styles.emptySubtext}>Customers you complete services for will appear in this directory.</Text>
+        <AnimatedScreen animation="fade">
+          {/* Search Input */}
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by customer name or phone..."
+              value={search}
+              onChangeText={setSearch}
+              placeholderTextColor={colors.textLight}
+            />
           </View>
-        ) : (
+
+          {filteredCustomers.length === 0 ? (
+            <EmptyState
+              icon="👥"
+              title="No customers found"
+              subtitle="Customers you complete services for will appear in this directory."
+            />
+          ) : (
           filteredCustomers.map((cust) => (
             <View key={cust.phone} style={globalStyles.card}>
               <View style={styles.customerHeader}>
@@ -135,6 +134,7 @@ export default function CustomerListScreen() {
             </View>
           ))
         )}
+        </AnimatedScreen>
       </ScrollView>
     </SafeAreaView>
   );

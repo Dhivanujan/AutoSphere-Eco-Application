@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Pla
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { ScreenHeader, AnimatedScreen, StatusBadge, InteractiveMap, EmptyState } from '../components';
 
 export default function RequestDetailsScreen() {
   const { 
@@ -24,18 +25,16 @@ export default function RequestDetailsScreen() {
   if (documents.status !== 'Approved') {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
-            <Text style={styles.backBtnText}>← Home</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Job Detail</Text>
-          <View style={{ width: 50 }} />
-        </View>
-        <View style={styles.lockContainer}>
-          <Text style={styles.lockIcon}>🔒</Text>
-          <Text style={styles.lockTextTitle}>Verification Locked</Text>
-          <Text style={styles.lockTextDesc}>You cannot access customer job details until your account is approved.</Text>
-        </View>
+        <ScreenHeader
+          title="Job Detail"
+          backLabel="← Home"
+          onBack={() => setCurrentScreen('DASHBOARD')}
+        />
+        <EmptyState
+          icon="🔒"
+          title="Verification Locked"
+          subtitle="You cannot access customer job details until your account is approved."
+        />
       </SafeAreaView>
     );
   }
@@ -43,16 +42,15 @@ export default function RequestDetailsScreen() {
   if (!selectedRequest) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('REQUEST_LIST')}>
-            <Text style={styles.backBtnText}>← List</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Job Detail</Text>
-          <View style={{ width: 50 }} />
-        </View>
-        <View style={styles.emptyView}>
-          <Text style={styles.emptyText}>No Request Selected</Text>
-        </View>
+        <ScreenHeader
+          title="Job Detail"
+          backLabel="← List"
+          onBack={() => setCurrentScreen('REQUEST_LIST')}
+        />
+        <EmptyState
+          icon="📭"
+          title="No Request Selected"
+        />
       </SafeAreaView>
     );
   }
@@ -78,49 +76,39 @@ export default function RequestDetailsScreen() {
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('REQUEST_LIST')}>
-          <Text style={styles.backBtnText}>← Jobs</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Job Details</Text>
-        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
-          <Text style={styles.backBtnText}>Home</Text>
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader
+        title="Job Details"
+        backLabel="← Jobs"
+        onBack={() => setCurrentScreen('REQUEST_LIST')}
+        rightLabel="Home"
+        onRight={() => setCurrentScreen('DASHBOARD')}
+      />
 
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
-        {/* Status Card */}
-        <View style={globalStyles.card}>
-          <View style={styles.statusRow}>
-            <View>
-              <Text style={styles.label}>REQUEST ID</Text>
-              <Text style={styles.value}>{id}</Text>
+        <AnimatedScreen animation="fade">
+          {/* Status Card */}
+          <View style={globalStyles.card}>
+            <View style={styles.statusRow}>
+              <View>
+                <Text style={styles.label}>REQUEST ID</Text>
+                <Text style={styles.value}>{id}</Text>
+              </View>
+              <StatusBadge status={status} />
             </View>
-            <View style={[
-              styles.statusBadge,
-              status === 'Pending' ? styles.badgePending :
-              status === 'Accepted' ? styles.badgeAccepted :
-              status === 'In Progress' ? styles.badgeActive :
-              status === 'Completed' ? styles.badgeCompleted : styles.badgeCancelled
-            ]}>
-              <Text style={styles.badgeLabel}>{status}</Text>
-            </View>
-          </View>
-          
-          <View style={styles.divider} />
-          
-          <View style={styles.metaRow}>
-            <View>
-              <Text style={styles.label}>ESTIMATED PAYOUT</Text>
-              <Text style={styles.fareAmount}>${fare.toFixed(2)}</Text>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text style={styles.label}>TIMELINE</Text>
-              <Text style={styles.timeValue}>{time}</Text>
+            
+            <View style={styles.divider} />
+            
+            <View style={styles.metaRow}>
+              <View>
+                <Text style={styles.label}>ESTIMATED PAYOUT</Text>
+                <Text style={styles.fareAmount}>${fare.toFixed(2)}</Text>
+              </View>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={styles.label}>TIMELINE</Text>
+                <Text style={styles.timeValue}>{time}</Text>
+              </View>
             </View>
           </View>
-        </View>
 
         {/* Customer Profile Card */}
         <View style={globalStyles.card}>
@@ -184,9 +172,8 @@ export default function RequestDetailsScreen() {
               <Text style={styles.locVal}>{dropoffLocation}</Text>
             </View>
           )}
-          <View style={styles.miniMap}>
-            <Text style={styles.mapEmoji}>🗺️</Text>
-            <Text style={styles.mapText}>Live GPS Navigation Routing</Text>
+          <View style={{ marginTop: 16 }}>
+            <InteractiveMap latitude={37.7749} longitude={-122.4194} height={120} label="Live GPS Navigation Routing" />
           </View>
         </View>
 
@@ -247,6 +234,7 @@ export default function RequestDetailsScreen() {
             </TouchableOpacity>
           )}
         </View>
+        </AnimatedScreen>
       </ScrollView>
 
       {/* Dynamic Chat Messenger Modal */}

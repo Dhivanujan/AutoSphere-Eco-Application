@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, SafeAr
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { ScreenHeader, AnimatedScreen } from '../components';
 
 export default function BusinessSetupScreen() {
   const { providerType, profile, saveBusinessProfile, setCurrentScreen, uploadProfilePhoto, uploadBusinessLogo, documents } = useApp();
@@ -101,15 +102,14 @@ export default function BusinessSetupScreen() {
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen(documents?.status === 'Approved' ? 'SETTINGS' : 'TYPE_SELECTION')}>
-          <Text style={styles.backBtnText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profile Setup</Text>
-        <View style={{ width: 50 }} />
-      </View>
+      <ScreenHeader
+        title="Profile Setup"
+        backLabel="← Back"
+        onBack={() => setCurrentScreen(documents?.status === 'Approved' ? 'SETTINGS' : 'TYPE_SELECTION')}
+      />
 
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
+        <AnimatedScreen animation="fade">
         <View style={styles.badgeContainer}>
           <View style={styles.badge}>
             <Text style={styles.badgeText}>{providerType}</Text>
@@ -272,6 +272,7 @@ export default function BusinessSetupScreen() {
             <Text style={globalStyles.btnPrimaryText}>Save & Proceed</Text>
           </TouchableOpacity>
         </View>
+        </AnimatedScreen>
       </ScrollView>
     </SafeAreaView>
   );

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Pla
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { ScreenHeader, AnimatedScreen } from '../components';
 
 export default function DocumentUploadScreen() {
   const { providerType, documents, uploadDocument, submitDocumentsForVerification, setCurrentScreen } = useApp();
@@ -66,102 +67,102 @@ export default function DocumentUploadScreen() {
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('BUSINESS_SETUP')}>
-          <Text style={styles.backBtnText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Document Upload</Text>
-        <View style={{ width: 50 }} />
-      </View>
+      <ScreenHeader
+        title="Document Upload"
+        backLabel="← Back"
+        onBack={() => setCurrentScreen('BUSINESS_SETUP')}
+      />
 
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Verification Documents</Text>
-        <Text style={styles.subtitle}>
-          Upload high-quality photos or PDF copies of your licenses and credentials. This ensures safety and trust on the AutoSphere network.
-        </Text>
+        <AnimatedScreen animation="fade">
+          <Text style={styles.title}>Verification Documents</Text>
+          <Text style={styles.subtitle}>
+            Upload high-quality photos or PDF copies of your licenses and credentials. This ensures safety and trust on the AutoSphere network.
+          </Text>
 
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-        <View style={styles.docList}>
-          {/* Document 1: ID */}
-          <View style={styles.docItem}>
-            <View style={styles.docInfo}>
-              <Text style={styles.docName}>Identity Document (Required)</Text>
-              <Text style={styles.docDesc}>Passport, Driver's License or National ID Card</Text>
-              {documents.identityDoc && <Text style={styles.fileName}>✓ {documents.identityDoc}</Text>}
-            </View>
-            <TouchableOpacity 
-              style={[styles.uploadBtn, documents.identityDoc ? styles.uploadedBtn : null]}
-              onPress={() => handlePickDocument('identityDoc')}
-            >
-              <Text style={[styles.uploadBtnText, documents.identityDoc ? styles.uploadedBtnText : null]}>
-                {documents.identityDoc ? 'Replace' : 'Upload File'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Document 2: Business Registration */}
-          {isBusiness && (
+          <View style={styles.docList}>
+            {/* Document 1: ID */}
             <View style={styles.docItem}>
               <View style={styles.docInfo}>
-                <Text style={styles.docName}>Business Registration Certificate (Required)</Text>
-                <Text style={styles.docDesc}>Official business incorporation paperwork or tax license</Text>
-                {documents.businessReg && <Text style={styles.fileName}>✓ {documents.businessReg}</Text>}
+                <Text style={styles.docName}>Identity Document (Required)</Text>
+                <Text style={styles.docDesc}>Passport, Driver's License or National ID Card</Text>
+                {documents.identityDoc && <Text style={styles.fileName}>✓ {documents.identityDoc}</Text>}
               </View>
               <TouchableOpacity 
-                style={[styles.uploadBtn, documents.businessReg ? styles.uploadedBtn : null]}
-                onPress={() => handlePickDocument('businessReg')}
+                style={[styles.uploadBtn, documents.identityDoc ? styles.uploadedBtn : null]}
+                onPress={() => handlePickDocument('identityDoc')}
               >
-                <Text style={[styles.uploadBtnText, documents.businessReg ? styles.uploadedBtnText : null]}>
-                  {documents.businessReg ? 'Replace' : 'Upload File'}
+                <Text style={[styles.uploadBtnText, documents.identityDoc ? styles.uploadedBtnText : null]}>
+                  {documents.identityDoc ? 'Replace' : 'Upload File'}
                 </Text>
               </TouchableOpacity>
             </View>
-          )}
 
-          {/* Document 3: Operating License */}
-          <View style={styles.docItem}>
-            <View style={styles.docInfo}>
-              <Text style={styles.docName}>Professional License (Required)</Text>
-              <Text style={styles.docDesc}>
-                {isBusiness ? 'Commercial service license or permit' : 'Driver license or certified mechanic credentials'}
-              </Text>
-              {documents.license && <Text style={styles.fileName}>✓ {documents.license}</Text>}
+            {/* Document 2: Business Registration */}
+            {isBusiness && (
+              <View style={styles.docItem}>
+                <View style={styles.docInfo}>
+                  <Text style={styles.docName}>Business Registration Certificate (Required)</Text>
+                  <Text style={styles.docDesc}>Official business incorporation paperwork or tax license</Text>
+                  {documents.businessReg && <Text style={styles.fileName}>✓ {documents.businessReg}</Text>}
+                </View>
+                <TouchableOpacity 
+                  style={[styles.uploadBtn, documents.businessReg ? styles.uploadedBtn : null]}
+                  onPress={() => handlePickDocument('businessReg')}
+                >
+                  <Text style={[styles.uploadBtnText, documents.businessReg ? styles.uploadedBtnText : null]}>
+                    {documents.businessReg ? 'Replace' : 'Upload File'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Document 3: Operating License */}
+            <View style={styles.docItem}>
+              <View style={styles.docInfo}>
+                <Text style={styles.docName}>Professional License (Required)</Text>
+                <Text style={styles.docDesc}>
+                  {isBusiness ? 'Commercial service license or permit' : 'Driver license or certified mechanic credentials'}
+                </Text>
+                {documents.license && <Text style={styles.fileName}>✓ {documents.license}</Text>}
+              </View>
+              <TouchableOpacity 
+                style={[styles.uploadBtn, documents.license ? styles.uploadedBtn : null]}
+                onPress={() => handlePickDocument('license')}
+              >
+                <Text style={[styles.uploadBtnText, documents.license ? styles.uploadedBtnText : null]}>
+                  {documents.license ? 'Replace' : 'Upload File'}
+                </Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity 
-              style={[styles.uploadBtn, documents.license ? styles.uploadedBtn : null]}
-              onPress={() => handlePickDocument('license')}
-            >
-              <Text style={[styles.uploadBtnText, documents.license ? styles.uploadedBtnText : null]}>
-                {documents.license ? 'Replace' : 'Upload File'}
-              </Text>
-            </TouchableOpacity>
+
+            {/* Document 4: Certificates */}
+            <View style={styles.docItem}>
+              <View style={styles.docInfo}>
+                <Text style={styles.docName}>Liability Insurance / Certificates (Optional)</Text>
+                <Text style={styles.docDesc}>Insurance cover or specialized vehicle training certificates</Text>
+                {documents.certificates && <Text style={styles.fileName}>✓ {documents.certificates}</Text>}
+              </View>
+              <TouchableOpacity 
+                style={[styles.uploadBtn, documents.certificates ? styles.uploadedBtn : null]}
+                onPress={() => handlePickDocument('certificates')}
+              >
+                <Text style={[styles.uploadBtnText, documents.certificates ? styles.uploadedBtnText : null]}>
+                  {documents.certificates ? 'Replace' : 'Upload File'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
-          {/* Document 4: Certificates */}
-          <View style={styles.docItem}>
-            <View style={styles.docInfo}>
-              <Text style={styles.docName}>Liability Insurance / Certificates (Optional)</Text>
-              <Text style={styles.docDesc}>Insurance cover or specialized vehicle training certificates</Text>
-              {documents.certificates && <Text style={styles.fileName}>✓ {documents.certificates}</Text>}
-            </View>
-            <TouchableOpacity 
-              style={[styles.uploadBtn, documents.certificates ? styles.uploadedBtn : null]}
-              onPress={() => handlePickDocument('certificates')}
-            >
-              <Text style={[styles.uploadBtnText, documents.certificates ? styles.uploadedBtnText : null]}>
-                {documents.certificates ? 'Replace' : 'Upload File'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <TouchableOpacity 
-          style={[styles.submitButton, globalStyles.btnPrimary]} 
-          onPress={handleSubmit}
-        >
-          <Text style={globalStyles.btnPrimaryText}>Submit for Review</Text>
-        </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.submitButton, globalStyles.btnPrimary]} 
+            onPress={handleSubmit}
+          >
+            <Text style={globalStyles.btnPrimaryText}>Submit for Review</Text>
+          </TouchableOpacity>
+        </AnimatedScreen>
       </ScrollView>
     </SafeAreaView>
   );

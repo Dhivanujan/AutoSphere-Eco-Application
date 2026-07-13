@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Platform, SafeAre
 import { AppProvider, useApp } from './src/services/AppContext';
 import { colors } from './src/theme/colors';
 import { api } from './src/services/api';
+import { BottomTabBar } from './src/components';
 
 
 // Import All 20 Screens
@@ -27,54 +28,80 @@ import NotificationsScreen from './src/screens/NotificationsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 
-// Core Navigator Switcher
-function RootNavigator() {
-  const { currentScreen } = useApp();
+// Screens that should NOT show the bottom tab bar (auth/setup flow)
+const AUTH_SCREENS = [
+  'SPLASH', 'INTRO', 'LOGIN', 'REGISTER', 'OTP',
+  'TYPE_SELECTION', 'BUSINESS_SETUP', 'DOCUMENT_UPLOAD', 'VERIFICATION_STATUS'
+];
 
-  switch (currentScreen) {
-    case 'SPLASH':
-      return <SplashScreen />;
-    case 'INTRO':
-      return <IntroScreen />;
-    case 'LOGIN':
-      return <LoginScreen />;
-    case 'REGISTER':
-      return <RegisterScreen />;
-    case 'OTP':
-      return <OTPScreen />;
-    case 'TYPE_SELECTION':
-      return <TypeSelectionScreen />;
-    case 'BUSINESS_SETUP':
-      return <BusinessSetupScreen />;
-    case 'DOCUMENT_UPLOAD':
-      return <DocumentUploadScreen />;
-    case 'VERIFICATION_STATUS':
-      return <VerificationStatusScreen />;
-    case 'DASHBOARD':
-      return <DashboardScreen />;
-    case 'REQUEST_LIST':
-      return <RequestListScreen />;
-    case 'REQUEST_DETAILS':
-      return <RequestDetailsScreen />;
-    case 'AVAILABILITY':
-      return <AvailabilityScreen />;
-    case 'LOCATION':
-      return <LocationScreen />;
-    case 'EARNINGS':
-      return <EarningsScreen />;
-    case 'CUSTOMER_LIST':
-      return <CustomerListScreen />;
-    case 'REVIEWS':
-      return <ReviewsScreen />;
-    case 'NOTIFICATIONS':
-      return <NotificationsScreen />;
-    case 'PROFILE':
-      return <ProfileScreen />;
-    case 'SETTINGS':
-      return <SettingsScreen />;
-    default:
-      return <SplashScreen />;
-  }
+// Core Navigator Switcher with Bottom Tab Bar integration
+function RootNavigator() {
+  const { currentScreen, setCurrentScreen, providerType, notifications } = useApp();
+  const showTabBar = !AUTH_SCREENS.includes(currentScreen);
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case 'SPLASH':
+        return <SplashScreen />;
+      case 'INTRO':
+        return <IntroScreen />;
+      case 'LOGIN':
+        return <LoginScreen />;
+      case 'REGISTER':
+        return <RegisterScreen />;
+      case 'OTP':
+        return <OTPScreen />;
+      case 'TYPE_SELECTION':
+        return <TypeSelectionScreen />;
+      case 'BUSINESS_SETUP':
+        return <BusinessSetupScreen />;
+      case 'DOCUMENT_UPLOAD':
+        return <DocumentUploadScreen />;
+      case 'VERIFICATION_STATUS':
+        return <VerificationStatusScreen />;
+      case 'DASHBOARD':
+        return <DashboardScreen />;
+      case 'REQUEST_LIST':
+        return <RequestListScreen />;
+      case 'REQUEST_DETAILS':
+        return <RequestDetailsScreen />;
+      case 'AVAILABILITY':
+        return <AvailabilityScreen />;
+      case 'LOCATION':
+        return <LocationScreen />;
+      case 'EARNINGS':
+        return <EarningsScreen />;
+      case 'CUSTOMER_LIST':
+        return <CustomerListScreen />;
+      case 'REVIEWS':
+        return <ReviewsScreen />;
+      case 'NOTIFICATIONS':
+        return <NotificationsScreen />;
+      case 'PROFILE':
+        return <ProfileScreen />;
+      case 'SETTINGS':
+        return <SettingsScreen />;
+      default:
+        return <SplashScreen />;
+    }
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
+        {renderScreen()}
+      </View>
+      {showTabBar && (
+        <BottomTabBar
+          currentScreen={currentScreen}
+          onNavigate={setCurrentScreen}
+          unreadCount={unreadCount}
+          providerType={providerType}
+        />
+      )}
+    </View>
+  );
 }
 
 // Developer Sandbox Overlay Panel

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, Keyb
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { ScreenHeader, AnimatedScreen } from '../components';
 
 export default function RegisterScreen() {
   const { registerUser, setCurrentScreen } = useApp();
@@ -36,93 +37,95 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScreenHeader
+        title="Create Account"
+        backLabel="← Login"
+        onBack={() => setCurrentScreen('LOGIN')}
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-          <View style={styles.headerArea}>
-            <Image 
-              source={require('../../assets/logo.png')} 
-              style={styles.logoImage} 
-              resizeMode="contain"
-            />
-            <Text style={styles.title}>Create Provider Account</Text>
-            <Text style={styles.subtitle}>Register your business to begin receiving customer requests</Text>
-          </View>
-
-          <View style={styles.formContainer}>
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
-            
-            <View style={globalStyles.inputGroup}>
-              <Text style={globalStyles.inputLabel}>Full Name</Text>
-              <TextInput
-                style={globalStyles.input}
-                placeholder="e.g. Alex Carter"
-                placeholderTextColor={colors.textLight}
-                value={name}
-                onChangeText={setName}
-              />
+          <AnimatedScreen animation="fade">
+            <View style={styles.headerArea}>
+              <Text style={styles.title}>Get Started</Text>
+              <Text style={styles.subtitle}>Register your business to begin receiving customer requests</Text>
             </View>
 
-            <View style={globalStyles.inputGroup}>
-              <Text style={globalStyles.inputLabel}>Email Address</Text>
-              <TextInput
-                style={globalStyles.input}
-                placeholder="e.g. alex@example.com"
-                placeholderTextColor={colors.textLight}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
-
-            <View style={globalStyles.inputGroup}>
-              <Text style={globalStyles.inputLabel}>Phone Number</Text>
-              <TextInput
-                style={globalStyles.input}
-                placeholder="e.g. +1 (555) 789-0123"
-                placeholderTextColor={colors.textLight}
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-              />
-            </View>
-
-            <View style={globalStyles.inputGroup}>
-              <Text style={globalStyles.inputLabel}>Password</Text>
-              <TextInput
-                style={globalStyles.input}
-                placeholder="Minimum 6 characters"
-                placeholderTextColor={colors.textLight}
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-              />
-            </View>
-
-            {/* Terms and conditions toggle */}
-            <TouchableOpacity style={styles.agreeRow} onPress={() => setAgree(!agree)}>
-              <View style={[styles.checkbox, agree ? styles.checkboxChecked : null]}>
-                {agree ? <Text style={styles.checkmark}>✓</Text> : null}
+            <View style={styles.formContainer}>
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
+              
+              <View style={globalStyles.inputGroup}>
+                <Text style={globalStyles.inputLabel}>Full Name</Text>
+                <TextInput
+                  style={globalStyles.input}
+                  placeholder="e.g. Alex Carter"
+                  placeholderTextColor={colors.textLight}
+                  value={name}
+                  onChangeText={setName}
+                />
               </View>
-              <Text style={styles.agreeText}>
-                I agree to the <Text style={styles.linkText}>Terms of Service</Text> and <Text style={styles.linkText}>Privacy Policy</Text>
-              </Text>
-            </TouchableOpacity>
 
-            <TouchableOpacity style={globalStyles.btnPrimary} onPress={handleRegister}>
-              <Text style={globalStyles.btnPrimaryText}>Create Account</Text>
-            </TouchableOpacity>
+              <View style={globalStyles.inputGroup}>
+                <Text style={globalStyles.inputLabel}>Email Address</Text>
+                <TextInput
+                  style={globalStyles.input}
+                  placeholder="e.g. alex@example.com"
+                  placeholderTextColor={colors.textLight}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
 
-            <View style={styles.loginRow}>
-              <Text style={styles.hasAccountText}>Already have an account? </Text>
-              <TouchableOpacity onPress={() => setCurrentScreen('LOGIN')}>
-                <Text style={styles.loginLink}>Log In</Text>
+              <View style={globalStyles.inputGroup}>
+                <Text style={globalStyles.inputLabel}>Phone Number</Text>
+                <TextInput
+                  style={globalStyles.input}
+                  placeholder="e.g. +1 (555) 789-0123"
+                  placeholderTextColor={colors.textLight}
+                  value={phone}
+                  onChangeText={setPhone}
+                  keyboardType="phone-pad"
+                />
+              </View>
+
+              <View style={globalStyles.inputGroup}>
+                <Text style={globalStyles.inputLabel}>Password</Text>
+                <TextInput
+                  style={globalStyles.input}
+                  placeholder="Minimum 6 characters"
+                  placeholderTextColor={colors.textLight}
+                  secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                />
+              </View>
+
+              {/* Terms and conditions toggle */}
+              <TouchableOpacity style={styles.agreeRow} onPress={() => setAgree(!agree)}>
+                <View style={[styles.checkbox, agree ? styles.checkboxChecked : null]}>
+                  {agree ? <Text style={styles.checkmark}>✓</Text> : null}
+                </View>
+                <Text style={styles.agreeText}>
+                  I agree to the <Text style={styles.linkText}>Terms of Service</Text> and <Text style={styles.linkText}>Privacy Policy</Text>
+                </Text>
               </TouchableOpacity>
+
+              <TouchableOpacity style={globalStyles.btnPrimary} onPress={handleRegister}>
+                <Text style={globalStyles.btnPrimaryText}>Create Account</Text>
+              </TouchableOpacity>
+
+              <View style={styles.loginRow}>
+                <Text style={styles.hasAccountText}>Already have an account? </Text>
+                <TouchableOpacity onPress={() => setCurrentScreen('LOGIN')}>
+                  <Text style={styles.loginLink}>Log In</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </AnimatedScreen>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

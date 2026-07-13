@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Swi
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { ScreenHeader, AnimatedScreen } from '../components';
 
 export default function SettingsScreen() {
   const { settings, updateSettings, logout, setCurrentScreen } = useApp();
@@ -35,16 +36,14 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
-          <Text style={styles.backBtnText}>← Home</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>System Settings</Text>
-        <View style={{ width: 50 }} />
-      </View>
+      <ScreenHeader
+        title="System Settings"
+        backLabel="← Home"
+        onBack={() => setCurrentScreen('DASHBOARD')}
+      />
 
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
+        <AnimatedScreen animation="fade">
         
         {/* Account Shortcuts */}
         <View style={globalStyles.card}>
@@ -155,6 +154,7 @@ export default function SettingsScreen() {
             <Text style={styles.deactivateText}>Deactivate Partner Account</Text>
           </TouchableOpacity>
         </View>
+        </AnimatedScreen>
       </ScrollView>
     </SafeAreaView>
   );

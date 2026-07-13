@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Pla
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { AnimatedScreen } from '../components';
 
 const serviceOptions = [
   { type: 'Taxi Driver', icon: '🚗', desc: 'Drive passengers, accept immediate ride requests' },
@@ -31,47 +32,49 @@ export default function TypeSelectionScreen() {
         />
       </View>
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.introArea}>
-          <Text style={styles.title}>What service do you provide?</Text>
-          <Text style={styles.subtitle}>
-            Select your primary business type. Your workspace tools and dashboard will adapt dynamically to this choice.
-          </Text>
-        </View>
+        <AnimatedScreen animation="slideUp">
+          <View style={styles.introArea}>
+            <Text style={styles.title}>What service do you provide?</Text>
+            <Text style={styles.subtitle}>
+              Select your primary business type. Your workspace tools and dashboard will adapt dynamically to this choice.
+            </Text>
+          </View>
 
-        <View style={styles.grid}>
-          {serviceOptions.map((item) => {
-            const isSelected = providerType === item.type;
-            return (
-              <TouchableOpacity
-                key={item.type}
-                style={[
-                  styles.optionCard,
-                  isSelected ? styles.optionCardSelected : null
-                ]}
-                onPress={() => selectProviderType(item.type)}
-              >
-                <View style={[styles.iconBox, isSelected ? styles.iconBoxSelected : null]}>
-                  <Text style={styles.icon}>{item.icon}</Text>
-                </View>
-                <View style={styles.infoBox}>
-                  <Text style={[styles.optionTitle, isSelected ? styles.optionTitleSelected : null]}>
-                    {item.type}
-                  </Text>
-                  <Text style={styles.optionDesc} numberOfLines={2}>
-                    {item.desc}
-                  </Text>
-                </View>
-                {isSelected ? (
-                  <View style={styles.radioSelected}>
-                    <View style={styles.radioDot} />
+          <View style={styles.grid}>
+            {serviceOptions.map((item) => {
+              const isSelected = providerType === item.type;
+              return (
+                <TouchableOpacity
+                  key={item.type}
+                  style={[
+                    styles.optionCard,
+                    isSelected ? styles.optionCardSelected : null
+                  ]}
+                  onPress={() => selectProviderType(item.type)}
+                >
+                  <View style={[styles.iconBox, isSelected ? styles.iconBoxSelected : null]}>
+                    <Text style={styles.icon}>{item.icon}</Text>
                   </View>
-                ) : (
-                  <View style={styles.radioUnselected} />
-                )}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+                  <View style={styles.infoBox}>
+                    <Text style={[styles.optionTitle, isSelected ? styles.optionTitleSelected : null]}>
+                      {item.type}
+                    </Text>
+                    <Text style={styles.optionDesc} numberOfLines={2}>
+                      {item.desc}
+                    </Text>
+                  </View>
+                  {isSelected ? (
+                    <View style={styles.radioSelected}>
+                      <View style={styles.radioDot} />
+                    </View>
+                  ) : (
+                    <View style={styles.radioUnselected} />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </AnimatedScreen>
       </ScrollView>
     </SafeAreaView>
   );

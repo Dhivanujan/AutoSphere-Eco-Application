@@ -4,41 +4,7 @@ import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
 import { api } from '../services/api';
-
-// Reusable Live Map Component
-const InteractiveMap = ({ latitude, longitude }) => {
-  if (Platform.OS === 'web') {
-    const mapUrl = `https://maps.google.com/maps?q=${latitude},${longitude}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
-    return (
-      <iframe
-        src={mapUrl}
-        style={{
-          width: '100%',
-          height: '100%',
-          border: 'none',
-          borderRadius: '10px'
-        }}
-        title="Location Settings GPS Map"
-      />
-    );
-  } else {
-    const staticMapUrl = `https://static-maps.yandex.ru/1.x/?ll=${longitude},${latitude}&spn=0.016,0.016&l=map&size=450,200`;
-    return (
-      <TouchableOpacity 
-        style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
-        onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`)}
-      >
-        <Image 
-          source={{ uri: staticMapUrl }} 
-          style={{ width: '100%', height: '100%', borderRadius: 10 }} 
-        />
-        <View style={{ position: 'absolute', backgroundColor: 'rgba(13, 17, 23, 0.75)', padding: 6, borderRadius: 6 }}>
-          <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>📍 Open in System Maps ↗</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  }
-};
+import { ScreenHeader, AnimatedScreen, InteractiveMap } from '../components';
 
 export default function LocationScreen() {
   const { location, setLocation, setCurrentScreen, profile, currentUser } = useApp();
@@ -136,16 +102,14 @@ export default function LocationScreen() {
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
-          <Text style={styles.backBtnText}>← Home</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Location Settings</Text>
-        <View style={{ width: 50 }} />
-      </View>
+      <ScreenHeader
+        title="Location Settings"
+        backLabel="← Home"
+        onBack={() => setCurrentScreen('DASHBOARD')}
+      />
 
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
+        <AnimatedScreen animation="fade">
         {/* Map Simulator Card */}
         <View style={globalStyles.card}>
           <Text style={styles.cardHeader}>🗺️ Active Dispatch Map</Text>
@@ -219,6 +183,7 @@ export default function LocationScreen() {
         <TouchableOpacity style={globalStyles.btnPrimary} onPress={handleSave}>
           <Text style={globalStyles.btnPrimaryText}>Save Location Settings</Text>
         </TouchableOpacity>
+        </AnimatedScreen>
       </ScrollView>
     </SafeAreaView>
   );

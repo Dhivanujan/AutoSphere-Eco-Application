@@ -4,6 +4,7 @@ import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
 import { api } from '../services/api';
+import { ScreenHeader, AnimatedScreen } from '../components';
 
 export default function ProfileScreen() {
   const { profile, setProfile, providerType, setCurrentScreen, uploadProfilePhoto, uploadBusinessLogo, currentUser } = useApp();
@@ -108,18 +109,16 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
-          <Text style={styles.backBtnText}>← Home</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Profile</Text>
-        <TouchableOpacity style={styles.backBtn} onPress={handleUpdate}>
-          <Text style={styles.saveBtnText}>Save</Text>
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader
+        title="My Profile"
+        backLabel="← Home"
+        onBack={() => setCurrentScreen('DASHBOARD')}
+        rightLabel="Save"
+        onRight={handleUpdate}
+      />
 
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
+        <AnimatedScreen animation="fade">
         {/* Banner with profile initial */}
         <View style={styles.banner}>
           <View style={styles.bigAvatar}>
@@ -273,6 +272,7 @@ export default function ProfileScreen() {
             <Text style={globalStyles.btnPrimaryText}>Save Changes</Text>
           </TouchableOpacity>
         </View>
+        </AnimatedScreen>
       </ScrollView>
     </SafeAreaView>
   );

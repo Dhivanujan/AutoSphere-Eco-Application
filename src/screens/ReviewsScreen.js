@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Pla
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { ScreenHeader, AnimatedScreen, EmptyState } from '../components';
 
 export default function ReviewsScreen() {
   const { reviews, setCurrentScreen } = useApp();
@@ -35,84 +36,84 @@ export default function ReviewsScreen() {
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
-          <Text style={styles.backBtnText}>← Home</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Reviews & Feedback</Text>
-        <View style={{ width: 50 }} />
-      </View>
+      <ScreenHeader
+        title="Reviews & Ratings"
+        backLabel="← Home"
+        onBack={() => setCurrentScreen('DASHBOARD')}
+      />
 
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
-        {/* Rating Overview Card */}
-        <View style={globalStyles.card}>
-          <View style={styles.overviewRow}>
-            <View style={styles.bigRatingBox}>
-              <Text style={styles.bigRatingText}>{averageRating}</Text>
-              <View style={styles.starsRow}>{renderStars(Math.round(parseFloat(averageRating)))}</View>
-              <Text style={styles.totalReviewsLabel}>{totalReviews} Reviews</Text>
-            </View>
-
-            {/* Progress breakdown */}
-            <View style={styles.breakdownCol}>
-              {[5, 4, 3, 2, 1].map(stars => {
-                const count = counts[stars] || 0;
-                const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
-                return (
-                  <View key={stars} style={styles.breakdownRow}>
-                    <Text style={styles.breakdownStarLabel}>{stars} ★</Text>
-                    <View style={styles.progressTrack}>
-                      <View style={[styles.progressFill, { width: `${percentage}%` }]} />
-                    </View>
-                    <Text style={styles.breakdownCountLabel}>{count}</Text>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-        </View>
-
-        {/* Filters */}
-        <View style={styles.filterContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
-            {['All', '5', '4', '3', '2', '1'].map(val => (
-              <TouchableOpacity 
-                key={val} 
-                style={[styles.filterTab, filterRating === val ? styles.filterTabActive : null]}
-                onPress={() => setFilterRating(val)}
-              >
-                <Text style={[styles.filterTabText, filterRating === val ? styles.filterTabTextActive : null]}>
-                  {val === 'All' ? 'All Reviews' : `${val} ★`}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Reviews List */}
-        <Text style={styles.sectionHeader}>Customer Testimonials</Text>
-        {filteredReviews.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No reviews matching this filter</Text>
-          </View>
-        ) : (
-          filteredReviews.map(rev => (
-            <View key={rev.id} style={globalStyles.card}>
-              <View style={styles.reviewHeader}>
-                <View>
-                  <Text style={styles.reviewAuthor}>{rev.author}</Text>
-                  <Text style={styles.reviewService}>{rev.service}</Text>
-                </View>
-                <View style={{ alignItems: 'flex-end' }}>
-                  <View style={styles.starContainer}>{renderStars(rev.rating)}</View>
-                  <Text style={styles.reviewDate}>{rev.date}</Text>
-                </View>
+        <AnimatedScreen animation="fade">
+          {/* Rating Overview Card */}
+          <View style={globalStyles.card}>
+            <View style={styles.overviewRow}>
+              <View style={styles.bigRatingBox}>
+                <Text style={styles.bigRatingText}>{averageRating}</Text>
+                <View style={styles.starsRow}>{renderStars(Math.round(parseFloat(averageRating)))}</View>
+                <Text style={styles.totalReviewsLabel}>{totalReviews} Reviews</Text>
               </View>
-              <Text style={styles.reviewComment}>"{rev.comment}"</Text>
+
+              {/* Progress breakdown */}
+              <View style={styles.breakdownCol}>
+                {[5, 4, 3, 2, 1].map(stars => {
+                  const count = counts[stars] || 0;
+                  const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+                  return (
+                    <View key={stars} style={styles.breakdownRow}>
+                      <Text style={styles.breakdownStarLabel}>{stars} ★</Text>
+                      <View style={styles.progressTrack}>
+                        <View style={[styles.progressFill, { width: `${percentage}%` }]} />
+                      </View>
+                      <Text style={styles.breakdownCountLabel}>{count}</Text>
+                    </View>
+                  );
+                })}
+              </View>
             </View>
-          ))
-        )}
+          </View>
+
+          {/* Filters */}
+          <View style={styles.filterContainer}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+              {['All', '5', '4', '3', '2', '1'].map(val => (
+                <TouchableOpacity 
+                  key={val} 
+                  style={[styles.filterTab, filterRating === val ? styles.filterTabActive : null]}
+                  onPress={() => setFilterRating(val)}
+                >
+                  <Text style={[styles.filterTabText, filterRating === val ? styles.filterTabTextActive : null]}>
+                    {val === 'All' ? 'All Reviews' : `${val} ★`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Reviews List */}
+          <Text style={styles.sectionHeader}>Customer Testimonials</Text>
+          {filteredReviews.length === 0 ? (
+            <EmptyState
+              icon="⭐"
+              title="No reviews matching this filter"
+            />
+          ) : (
+            filteredReviews.map(rev => (
+              <View key={rev.id} style={globalStyles.card}>
+                <View style={styles.reviewHeader}>
+                  <View>
+                    <Text style={styles.reviewAuthor}>{rev.author}</Text>
+                    <Text style={styles.reviewService}>{rev.service}</Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <View style={styles.starContainer}>{renderStars(rev.rating)}</View>
+                    <Text style={styles.reviewDate}>{rev.date}</Text>
+                  </View>
+                </View>
+                <Text style={styles.reviewComment}>"{rev.comment}"</Text>
+              </View>
+            ))
+          )}
+        </AnimatedScreen>
       </ScrollView>
     </SafeAreaView>
   );

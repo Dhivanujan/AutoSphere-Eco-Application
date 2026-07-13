@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } fr
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
+import { ScreenHeader, AnimatedScreen, RequestCard, EmptyState } from '../components';
 
 export default function RequestListScreen() {
   const { requests, providerType, documents, setCurrentScreen, setSelectedRequest } = useApp();
@@ -28,14 +29,11 @@ export default function RequestListScreen() {
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('DASHBOARD')}>
-          <Text style={styles.backBtnText}>← Home</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Job Requests</Text>
-        <View style={{ width: 50 }} />
-      </View>
+      <ScreenHeader
+        title="Job Requests"
+        backLabel="← Home"
+        onBack={() => setCurrentScreen('DASHBOARD')}
+      />
 
       {/* Tabs */}
       <View style={styles.tabContainer}>
@@ -57,65 +55,37 @@ export default function RequestListScreen() {
 
       {/* Requests List */}
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
-        {documents.status !== 'Approved' ? (
-          <View style={styles.lockContainer}>
-            <Text style={styles.lockIcon}>🔒</Text>
-            <Text style={styles.lockTextTitle}>Verification Required</Text>
-            <Text style={styles.lockTextDesc}>
-              Your account status is currently {(documents.status || 'Pending').toUpperCase()}. You will be able to access the customer requests queue once approved.
-            </Text>
-            <TouchableOpacity 
-              style={[globalStyles.btnSecondary, { marginTop: 15 }]}
-              onPress={() => setCurrentScreen('VERIFICATION_STATUS')}
-            >
-              <Text style={globalStyles.btnSecondaryText}>View Verification Status</Text>
-            </TouchableOpacity>
-          </View>
-        ) : filteredRequests.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyIcon}>📂</Text>
-            <Text style={styles.emptyText}>No requests in this tab</Text>
-            <Text style={styles.emptySubtext}>Requests matching this status will appear here.</Text>
-          </View>
-        ) : (
-          filteredRequests.map(req => (
-            <TouchableOpacity 
-              key={req.id} 
-              style={styles.requestCard}
-              onPress={() => handleSelectRequest(req)}
-            >
-              <View style={styles.cardHeader}>
-                <Text style={styles.reqId}>ID: {req.id}</Text>
-                <Text style={styles.reqTime}>{req.time}</Text>
-              </View>
-
-              <Text style={styles.customerName}>{req.customerName}</Text>
-              <Text style={styles.serviceDetails}>{req.serviceDetails}</Text>
-              
-              <View style={styles.divider} />
-
-              <View style={styles.cardFooter}>
-                <View style={styles.locationContainer}>
-                  <Text style={styles.locationText} numberOfLines={1}>📍 {req.pickupLocation}</Text>
-                </View>
-                <Text style={styles.fareText}>${req.fare.toFixed(2)}</Text>
-              </View>
-
-              {/* Status Badge */}
-              <View style={styles.badgeRow}>
-                <View style={[
-                  styles.badge,
-                  req.status === 'Pending' ? styles.badgePending :
-                  req.status === 'Accepted' ? styles.badgeAccepted :
-                  req.status === 'In Progress' ? styles.badgeActive :
-                  req.status === 'Completed' ? styles.badgeCompleted : styles.badgeCancelled
-                ]}>
-                  <Text style={styles.badgeLabel}>{req.status}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))
-        )}
+        <AnimatedScreen animation="fade">
+          {documents.status !== 'Approved' ? (
+            <View style={styles.lockContainer}>
+              <Text style={styles.lockIcon}>🔒</Text>
+              <Text style={styles.lockTextTitle}>Verification Required</Text>
+              <Text style={styles.lockTextDesc}>
+                Your account status is currently {(documents.status || 'Pending').toUpperCase()}. You will be able to access the customer requests queue once approved.
+              </Text>
+              <TouchableOpacity 
+                style={[globalStyles.btnSecondary, { marginTop: 15 }]}
+                onPress={() => setCurrentScreen('VERIFICATION_STATUS')}
+              >
+                <Text style={globalStyles.btnSecondaryText}>View Verification Status</Text>
+              </TouchableOpacity>
+            </View>
+          ) : filteredRequests.length === 0 ? (
+            <EmptyState
+              icon="📂"
+              title="No requests in this tab"
+              subtitle="Requests matching this status will appear here."
+            />
+          ) : (
+            filteredRequests.map(req => (
+              <RequestCard
+                key={req.id}
+                request={req}
+                onPress={() => handleSelectRequest(req)}
+              />
+            ))
+          )}
+        </AnimatedScreen>
       </ScrollView>
     </SafeAreaView>
   );
