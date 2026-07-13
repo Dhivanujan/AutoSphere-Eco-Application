@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
   },
   locType: {
     fontSize: 10,
-    fontWeight: '750',
+    fontWeight: '700',
     color: colors.textLight,
     textTransform: 'uppercase',
   },
@@ -541,7 +541,7 @@ const styles = StyleSheet.create({
   },
   mapText: {
     fontSize: 12,
-    fontWeight: '750',
+    fontWeight: '700',
     color: colors.secondary,
   },
   historyItem: {

@@ -10,7 +10,7 @@ export default function ReviewsScreen() {
 
   // Calculate stats
   const totalReviews = reviews.length;
-  const averageRating = (reviews.reduce((acc, curr) => acc + curr.rating, 0) / totalReviews).toFixed(1);
+  const averageRating = totalReviews > 0 ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / totalReviews).toFixed(1) : '5.0';
 
   // Calculate counts for breakdown
   const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   },
   bigRatingText: {
     fontSize: 48,
-    fontWeight: '850',
+    fontWeight: '800',
     color: colors.secondary,
   },
   starsRow: {
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   reviewAuthor: {
     fontSize: 14,
-    fontWeight: '750',
+    fontWeight: '700',
     color: colors.secondary,
   },
   reviewService: {

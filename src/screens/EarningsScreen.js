@@ -11,7 +11,7 @@ export default function EarningsScreen() {
   const completedTxCount = completedTx.length;
   const completedTxSum = completedTx.reduce((acc, tx) => acc + tx.amount, 0);
 
-  const settledPayouts = earnings.history.filter(tx => tx.status === 'Settled' || tx.title.includes('Payout'));
+  const settledPayouts = earnings.history.filter(tx => tx.status === 'Settled' || (tx.title && tx.title.includes('Payout')));
   const settledSum = settledPayouts.reduce((acc, tx) => acc + tx.amount, 0);
 
   const pendingSum = earnings.weekly;

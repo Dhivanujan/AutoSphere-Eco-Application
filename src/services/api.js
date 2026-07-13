@@ -19,7 +19,8 @@ import {
   addDoc, 
   onSnapshot,
   orderBy,
-  deleteDoc
+  deleteDoc,
+  limit
 } from 'firebase/firestore';
 
 // --- MOCK / FALLBACK SEED DATA ---
@@ -164,6 +165,96 @@ const defaultMockUsers = [
   }
 ];
 
+// --- BACKEND / MONGO LOCALHOST CONFIGURATION ---
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const BACKEND_WS_URL = process.env.EXPO_PUBLIC_BACKEND_WS_URL;
+const isBackendConfigured = !!BACKEND_URL;
+
+let socket = null;
+const socketCallbacks = {};
+
+const getSocket = () => {
+  if (!BACKEND_WS_URL) return null;
+  if (socket && (socket.readyState === 0 || socket.readyState === 1)) {
+    return socket;
+  }
+  
+  console.log('[WebSocket] Connecting to', BACKEND_WS_URL);
+  socket = new WebSocket(BACKEND_WS_URL);
+  
+  socket.onopen = () => {
+    console.log('[WebSocket] Connection established.');
+    // Resubscribe to all active channels
+    Object.keys(socketCallbacks).forEach(subId => {
+      const { channel, params } = socketCallbacks[subId];
+      socket.send(JSON.stringify({ type: 'subscribe', id: subId, channel, params }));
+    });
+  };
+  
+  socket.onmessage = (e) => {
+    try {
+      const { id, data } = JSON.parse(e.data);
+      if (socketCallbacks[id]) {
+        socketCallbacks[id].callback(data);
+      }
+    } catch (err) {
+      console.warn('[WebSocket] Error parsing message:', err);
+    }
+  };
+  
+  socket.onclose = () => {
+    console.log('[WebSocket] Connection closed. Reconnecting in 3s...');
+    setTimeout(getSocket, 3000);
+  };
+  
+  socket.onerror = (err) => {
+    console.warn('[WebSocket] Error:', err);
+  };
+  
+  return socket;
+};
+
+const subscribeWebSocket = (channel, params, callback) => {
+  const subId = `${channel}_${JSON.stringify(params || {})}_${Math.random().toString(36).substring(7)}`;
+  socketCallbacks[subId] = { channel, params, callback };
+  
+  const ws = getSocket();
+  if (ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({ type: 'subscribe', id: subId, channel, params }));
+  }
+  
+  return () => {
+    delete socketCallbacks[subId];
+    if (socket && socket.readyState === 1) {
+      socket.send(JSON.stringify({ type: 'unsubscribe', id: subId }));
+    }
+  };
+};
+
+const makeRequest = async (url, method = 'GET', body = null) => {
+  const options = {
+    method,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
+  
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (err) {
+    console.warn(`[Backend API] Request failed for ${method} ${url}:`, err.message);
+    throw err;
+  }
+};
+
 // --- OFFLINE STATE STORE MANAGERS ---
 const localAuthCallbacks = {};
 const activeSubscriptions = {}; // key -> array of callbacks
@@ -218,23 +309,28 @@ setTimeout(() => {
 }, 2000);
 
 export const api = {
-  // Connection Mode Indicator
+  // Connection Mode Indicators
   firebaseActive: isFirebaseConfigured,
+  backendActive: isBackendConfigured,
 
   // --- AUTHENTICATION ---
   auth: {
     login: async (email, password) => {
+      if (isBackendConfigured) {
+        const sessionUser = await makeRequest(`${BACKEND_URL}/api/auth/login`, 'POST', { email, password });
+        await AsyncStorage.setItem('autosphere_current_session', JSON.stringify(sessionUser));
+        triggerLocalAuthChange(sessionUser);
+        return sessionUser;
+      }
       if (isFirebaseConfigured && auth) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
-        // Fetch user profile from Firestore
         const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
         if (userDoc.exists()) {
           return { uid: firebaseUser.uid, email: firebaseUser.email, ...userDoc.data() };
         }
         return { uid: firebaseUser.uid, email: firebaseUser.email };
       } else {
-        // Mock Login
         const users = await getOfflineData('autosphere_users', defaultMockUsers);
         const foundUser = users.find(u => u.email === email && u.password === password);
         if (!foundUser) {
@@ -248,6 +344,12 @@ export const api = {
     },
 
     register: async (name, email, phone, password) => {
+      if (isBackendConfigured) {
+        const sessionUser = await makeRequest(`${BACKEND_URL}/api/auth/register`, 'POST', { name, email, phone, password });
+        await AsyncStorage.setItem('autosphere_current_session', JSON.stringify(sessionUser));
+        triggerLocalAuthChange(sessionUser);
+        return sessionUser;
+      }
       if (isFirebaseConfigured && auth) {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
@@ -273,11 +375,9 @@ export const api = {
             reviewNotes: 'Upload your documents to submit your application.'
           }
         };
-        // Create user document in Firestore
         await setDoc(doc(db, 'users', firebaseUser.uid), initialProfile);
         return { uid: firebaseUser.uid, email: firebaseUser.email, ...initialProfile };
       } else {
-        // Mock Register
         const users = await getOfflineData('autosphere_users', defaultMockUsers);
         const alreadyExists = users.some(u => u.email === email);
         if (alreadyExists) {
@@ -313,7 +413,6 @@ export const api = {
         await setOfflineData('autosphere_current_session', sessionUser);
         triggerLocalAuthChange(sessionUser);
         
-        // Seed mock data for this offline user
         const localReqs = await getOfflineData('autosphere_requests');
         if (!localReqs) {
           await setOfflineData('autosphere_requests', initialRequests);
@@ -323,6 +422,11 @@ export const api = {
     },
 
     logout: async () => {
+      if (isBackendConfigured) {
+        await AsyncStorage.removeItem('autosphere_current_session');
+        triggerLocalAuthChange(null);
+        return;
+      }
       if (isFirebaseConfigured && auth) {
         await signOut(auth);
       } else {
@@ -332,10 +436,35 @@ export const api = {
     },
 
     onAuthStateChanged: (callback) => {
+      if (isBackendConfigured) {
+        getOfflineData('autosphere_current_session').then(session => {
+          callback(session);
+        });
+
+        const id = Math.random().toString(36).substring(7);
+        localAuthCallbacks[id] = callback;
+
+        let unsubWS = () => {};
+        getOfflineData('autosphere_current_session').then(session => {
+          if (session && session.uid) {
+            unsubWS = subscribeWebSocket('profile', { uid: session.uid }, (updatedProfile) => {
+              if (updatedProfile) {
+                const newSession = { ...session, ...updatedProfile };
+                setOfflineData('autosphere_current_session', newSession);
+                triggerLocalAuthChange(newSession);
+              }
+            });
+          }
+        });
+
+        return () => {
+          delete localAuthCallbacks[id];
+          unsubWS();
+        };
+      }
       if (isFirebaseConfigured && auth) {
         return onAuthStateChanged(auth, async (firebaseUser) => {
           if (firebaseUser) {
-            // Setup real-time listener for current user's profile
             const profileRef = doc(db, 'users', firebaseUser.uid);
             const unsubProfile = onSnapshot(profileRef, (snap) => {
               if (snap.exists()) {
@@ -350,7 +479,6 @@ export const api = {
           }
         });
       } else {
-        // Mock auth observer
         getOfflineData('autosphere_current_session').then(session => {
           callback(session);
         });
@@ -367,11 +495,20 @@ export const api = {
   // --- PROFILE ---
   profile: {
     updateProfile: async (uid, profileData) => {
+      if (isBackendConfigured) {
+        const updatedUser = await makeRequest(`${BACKEND_URL}/api/profile/${uid}`, 'PUT', profileData);
+        const session = await getOfflineData('autosphere_current_session');
+        if (session && session.uid === uid) {
+          const newSession = { ...session, ...profileData };
+          await setOfflineData('autosphere_current_session', newSession);
+          triggerLocalAuthChange(newSession);
+        }
+        return updatedUser;
+      }
       if (isFirebaseConfigured && db) {
         const userRef = doc(db, 'users', uid);
         await updateDoc(userRef, profileData);
       } else {
-        // Mock update
         const users = await getOfflineData('autosphere_users', defaultMockUsers);
         const userIndex = users.findIndex(u => u.uid === uid);
         if (userIndex !== -1) {
@@ -391,6 +528,16 @@ export const api = {
   // --- DOCUMENTS / VERIFICATION ---
   documents: {
     uploadDocument: async (uid, docKey, fileName) => {
+      if (isBackendConfigured) {
+        const updatedUser = await makeRequest(`${BACKEND_URL}/api/documents/upload`, 'POST', { uid, docKey, fileName });
+        const session = await getOfflineData('autosphere_current_session');
+        if (session && session.uid === uid) {
+          const newSession = { ...session, documents: updatedUser.documents };
+          await setOfflineData('autosphere_current_session', newSession);
+          triggerLocalAuthChange(newSession);
+        }
+        return updatedUser;
+      }
       if (isFirebaseConfigured && db) {
         const userRef = doc(db, 'users', uid);
         await updateDoc(userRef, {
@@ -400,7 +547,6 @@ export const api = {
         const session = await getOfflineData('autosphere_current_session');
         if (session && session.uid === uid) {
           const updatedDocs = { ...session.documents, [docKey]: fileName };
-          // If required docs uploaded, set status to pending/review
           const isBusiness = [
             'Taxi Company', 'Garage', 'Service Station', 'Spare Parts Seller',
             'Vehicle Rental', 'Bus Operator', 'Parking Service', 'Car Wash Service'
@@ -414,6 +560,16 @@ export const api = {
       }
     },
     submitForVerification: async (uid) => {
+      if (isBackendConfigured) {
+        const updatedUser = await makeRequest(`${BACKEND_URL}/api/documents/verify`, 'POST', { uid });
+        const session = await getOfflineData('autosphere_current_session');
+        if (session && session.uid === uid) {
+          const newSession = { ...session, documents: updatedUser.documents };
+          await setOfflineData('autosphere_current_session', newSession);
+          triggerLocalAuthChange(newSession);
+        }
+        return updatedUser;
+      }
       const updateObj = {
         'documents.status': 'Pending',
         'documents.reviewNotes': 'Our support team is reviewing your uploaded credentials. This usually takes 24 hours.'
@@ -438,13 +594,15 @@ export const api = {
   // --- SERVICE DISPATCH REQUESTS ---
   requests: {
     subscribeRequests: (providerType, uid, callback) => {
+      if (isBackendConfigured) {
+        return subscribeWebSocket('requests', { providerType, uid }, callback);
+      }
       if (isFirebaseConfigured && db) {
         const q = query(collection(db, 'requests'), where('type', '==', providerType));
         return onSnapshot(q, (snap) => {
           const reqs = [];
           snap.forEach(docSnap => {
             const reqData = docSnap.data();
-            // Filter: show if pending (no providerId) OR assigned to current user
             if (reqData.status === 'Pending' || reqData.providerId === uid) {
               reqs.push({ id: docSnap.id, ...reqData });
             }
@@ -452,7 +610,6 @@ export const api = {
           callback(reqs);
         });
       } else {
-        // Mock DB Sub
         const subKey = `requests_${providerType}_${uid}`;
         if (!activeSubscriptions[subKey]) activeSubscriptions[subKey] = [];
         activeSubscriptions[subKey].push(callback);
@@ -471,6 +628,9 @@ export const api = {
     },
 
     acceptRequest: async (requestId, uid, customerName) => {
+      if (isBackendConfigured) {
+        return await makeRequest(`${BACKEND_URL}/api/requests/${requestId}/accept`, 'PUT', { uid, customerName });
+      }
       const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const historyUpdate = { time: timeStr, event: 'Request accepted by provider' };
 
@@ -485,7 +645,6 @@ export const api = {
             history: [...currentHist, historyUpdate]
           });
         }
-        // Add notification
         await addDoc(collection(db, 'notifications'), {
           providerId: uid,
           title: 'Request Accepted',
@@ -496,7 +655,6 @@ export const api = {
           createdAt: new Date().toISOString()
         });
       } else {
-        // Mock write
         const reqs = await getOfflineData('autosphere_requests', initialRequests);
         const index = reqs.findIndex(r => r.id === requestId);
         if (index !== -1) {
@@ -504,12 +662,10 @@ export const api = {
           reqs[index].providerId = uid;
           reqs[index].history = [...(reqs[index].history || []), historyUpdate];
           await setOfflineData('autosphere_requests', reqs);
-          // Broadcast to active subs
           const type = reqs[index].type;
           triggerLocalSubscription(`requests_${type}_${uid}`, reqs.filter(r => r.type === type && (r.status === 'Pending' || r.providerId === uid)));
         }
 
-        // Add mock notification
         const notifications = await getOfflineData(`autosphere_notifications_${uid}`, initialNotifications);
         const newNotif = {
           id: 'nt-' + Date.now(),
@@ -527,6 +683,9 @@ export const api = {
     },
 
     rejectRequest: async (requestId, uid) => {
+      if (isBackendConfigured) {
+        return await makeRequest(`${BACKEND_URL}/api/requests/${requestId}/reject`, 'PUT', { uid });
+      }
       const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const historyUpdate = { time: timeStr, event: 'Request declined by provider' };
 
@@ -554,6 +713,9 @@ export const api = {
     },
 
     startService: async (requestId, uid) => {
+      if (isBackendConfigured) {
+        return await makeRequest(`${BACKEND_URL}/api/requests/${requestId}/start`, 'PUT', { uid });
+      }
       const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const historyUpdate = { time: timeStr, event: 'Service in progress' };
 
@@ -581,6 +743,9 @@ export const api = {
     },
 
     completeService: async (requestId, uid, fare, customerName, serviceDetails) => {
+      if (isBackendConfigured) {
+        return await makeRequest(`${BACKEND_URL}/api/requests/${requestId}/complete`, 'PUT', { uid, fare, customerName, serviceDetails });
+      }
       const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const historyUpdate = { time: timeStr, event: 'Service marked as completed' };
 
@@ -605,7 +770,6 @@ export const api = {
           triggerLocalSubscription(`requests_${type}_${uid}`, reqs.filter(r => r.type === type && (r.status === 'Pending' || r.providerId === uid)));
         }
 
-        // Add mock notification
         const notifications = await getOfflineData(`autosphere_notifications_${uid}`, initialNotifications);
         const newNotif = {
           id: 'nt-' + Date.now(),
@@ -622,8 +786,10 @@ export const api = {
       }
     },
 
-    // Inject a simulated new request (called from DevTools)
     createMockDispatchOrder: async (providerType, customerName, fare, serviceDetails, extraFields = {}) => {
+      if (isBackendConfigured) {
+        return await makeRequest(`${BACKEND_URL}/api/requests/mock`, 'POST', { providerType, customerName, fare, serviceDetails, extraFields });
+      }
       const idNum = Math.floor(Math.random() * 900) + 100;
       const newReq = {
         id: `req-${idNum}`,
@@ -646,8 +812,6 @@ export const api = {
         const reqs = await getOfflineData('autosphere_requests', initialRequests);
         reqs.unshift(newReq);
         await setOfflineData('autosphere_requests', reqs);
-        // Alert any active provider listeners of that type
-        // Let's broadcast to all provider sessions
         const currentSession = await getOfflineData('autosphere_current_session');
         if (currentSession && currentSession.providerType === providerType) {
           triggerLocalSubscription(`requests_${providerType}_${currentSession.uid}`, reqs.filter(r => r.type === providerType && (r.status === 'Pending' || r.providerId === currentSession.uid)));
@@ -659,6 +823,9 @@ export const api = {
   // --- NOTIFICATIONS ---
   notifications: {
     subscribeNotifications: (uid, callback) => {
+      if (isBackendConfigured) {
+        return subscribeWebSocket('notifications', { uid }, callback);
+      }
       if (isFirebaseConfigured && db) {
         const q = query(
           collection(db, 'notifications'), 
@@ -669,7 +836,6 @@ export const api = {
           snap.forEach(docSnap => {
             list.push({ id: docSnap.id, ...docSnap.data() });
           });
-          // Sort by createdAt desc locally (if not sorted by Firestore index)
           list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
           callback(list);
         });
@@ -689,6 +855,9 @@ export const api = {
     },
 
     markAsRead: async (notificationId, uid) => {
+      if (isBackendConfigured) {
+        return await makeRequest(`${BACKEND_URL}/api/notifications/${notificationId}/read`, 'POST', { uid });
+      }
       if (isFirebaseConfigured && db) {
         const notifRef = doc(db, 'notifications', notificationId);
         await updateDoc(notifRef, { read: true });
@@ -704,8 +873,10 @@ export const api = {
     },
 
     clearAll: async (uid) => {
+      if (isBackendConfigured) {
+        return await makeRequest(`${BACKEND_URL}/api/notifications/clear`, 'POST', { uid });
+      }
       if (isFirebaseConfigured && db) {
-        // Query user's notifications and delete them
         const q = query(collection(db, 'notifications'), where('providerId', '==', uid));
         const snap = await getDocs(q);
         for (const docSnap of snap.docs) {
@@ -721,8 +892,9 @@ export const api = {
   // --- REVIEWS ---
   reviews: {
     subscribeReviews: (uid, callback) => {
-      // In a real app, reviews are loaded for the provider.
-      // We can query reviews where providerId == uid
+      if (isBackendConfigured) {
+        return subscribeWebSocket('reviews', { uid }, callback);
+      }
       if (isFirebaseConfigured && db) {
         const q = query(collection(db, 'reviews'), where('providerId', '==', uid));
         return onSnapshot(q, (snap) => {
@@ -731,7 +903,6 @@ export const api = {
             list.push({ id: docSnap.id, ...docSnap.data() });
           });
           if (list.length === 0) {
-            // Seed default reviews for this user on first load
             callback(initialReviews);
           } else {
             callback(list);
@@ -754,6 +925,9 @@ export const api = {
   // --- PAYOUTS ---
   payouts: {
     subscribePayouts: (uid, callback) => {
+      if (isBackendConfigured) {
+        return subscribeWebSocket('payouts', { uid }, callback);
+      }
       if (isFirebaseConfigured && db) {
         const q = query(collection(db, 'payouts'), where('providerId', '==', uid));
         return onSnapshot(q, (snap) => {
@@ -779,6 +953,9 @@ export const api = {
       }
     },
     createPayout: async (uid, amount) => {
+      if (isBackendConfigured) {
+        return await makeRequest(`${BACKEND_URL}/api/payouts`, 'POST', { uid, amount });
+      }
       const payoutObj = {
         providerId: uid,
         amount: amount,
@@ -802,6 +979,9 @@ export const api = {
   // --- CHAT MESSAGES ---
   chat: {
     subscribeMessages: (requestId, callback) => {
+      if (isBackendConfigured) {
+        return subscribeWebSocket('chat', { requestId }, callback);
+      }
       if (isFirebaseConfigured && db) {
         const q = query(
           collection(db, 'messages'), 
@@ -830,6 +1010,9 @@ export const api = {
       }
     },
     sendMessage: async (requestId, uid, sender, text) => {
+      if (isBackendConfigured) {
+        return await makeRequest(`${BACKEND_URL}/api/chat/${requestId}`, 'POST', { uid, sender, text });
+      }
       const msgObj = {
         requestId,
         sender,

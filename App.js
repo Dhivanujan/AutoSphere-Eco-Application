@@ -86,7 +86,8 @@ function DevToolsOverlay() {
     providerType, 
     setProviderType, 
     documents,
-    firebaseActive
+    firebaseActive,
+    backendActive
   } = useApp();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -186,8 +187,8 @@ function DevToolsOverlay() {
       <View style={styles.panelHeader}>
         <View>
           <Text style={styles.panelTitle}>🛠️ Developer Toolbar</Text>
-          <Text style={{ color: firebaseActive ? '#10B981' : '#F59E0B', fontSize: 10, fontWeight: '700', marginTop: 2 }}>
-            Database: {firebaseActive ? '🟢 FIREBASE ACTIVE' : '🟡 LOCAL MOCK STORAGE'}
+          <Text style={{ color: (backendActive || firebaseActive) ? '#10B981' : '#F59E0B', fontSize: 10, fontWeight: '700', marginTop: 2 }}>
+            Database: {backendActive ? '🟢 MONGODB LOCALHOST' : firebaseActive ? '🟢 FIREBASE ACTIVE' : '🟡 LOCAL MOCK STORAGE'}
           </Text>
         </View>
         <TouchableOpacity style={styles.closeBtn} onPress={() => setIsOpen(false)}>
@@ -345,7 +346,7 @@ const styles = StyleSheet.create({
   closeBtnText: {
     color: '#F8FAFC',
     fontSize: 12,
-    fontWeight: '650',
+    fontWeight: '600',
   },
   panelBody: {
     padding: 14,

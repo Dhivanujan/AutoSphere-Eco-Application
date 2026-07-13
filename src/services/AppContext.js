@@ -82,8 +82,14 @@ export const AppProvider = ({ children }) => {
 
   // Connection indicator
   const firebaseActive = api.firebaseActive;
+  const backendActive = api.backendActive;
 
   // 1. AUTH STATE OBSERVER
+  const currentScreenRef = React.useRef(currentScreen);
+  useEffect(() => {
+    currentScreenRef.current = currentScreen;
+  }, [currentScreen]);
+
   useEffect(() => {
     const unsubAuth = api.auth.onAuthStateChanged((user) => {
       setCurrentUser(user);
@@ -120,7 +126,8 @@ export const AppProvider = ({ children }) => {
         }
 
         // Auto-navigate user from Splash/Auth to Dashboard if setup is complete
-        if (currentScreen === 'SPLASH' || currentScreen === 'LOGIN' || currentScreen === 'REGISTER' || currentScreen === 'OTP') {
+        const activeScreen = currentScreenRef.current;
+        if (activeScreen === 'SPLASH' || activeScreen === 'LOGIN') {
           if (!user.providerType) {
             setCurrentScreen('TYPE_SELECTION');
           } else if (user.documents?.status !== 'Approved') {
@@ -156,7 +163,8 @@ export const AppProvider = ({ children }) => {
         setRequests([]);
         setNotifications([]);
         setReviews([]);
-        if (currentScreen !== 'REGISTER' && currentScreen !== 'INTRO' && currentScreen !== 'SPLASH') {
+        const activeScreen = currentScreenRef.current;
+        if (activeScreen !== 'REGISTER' && activeScreen !== 'INTRO' && activeScreen !== 'SPLASH') {
           setCurrentScreen('LOGIN');
         }
       }
@@ -165,7 +173,7 @@ export const AppProvider = ({ children }) => {
     return () => {
       if (typeof unsubAuth === 'function') unsubAuth();
     };
-  }, [currentScreen]);
+  }, []);
 
   // 2. REAL-TIME DATA DATABASE SUBSCRIPTIONS (Triggered on login)
   useEffect(() => {
@@ -303,10 +311,13 @@ export const AppProvider = ({ children }) => {
     if (currentUser) {
       await api.profile.updateProfile(currentUser.uid, {
         ...details,
-        // Sync with base profile fields if needed
       });
     }
-    setCurrentScreen('DOCUMENT_UPLOAD');
+    if (documents?.status === 'Approved') {
+      setCurrentScreen('SETTINGS');
+    } else {
+      setCurrentScreen('DOCUMENT_UPLOAD');
+    }
   };
 
   const uploadProfilePhoto = async (photo) => {
@@ -456,6 +467,7 @@ export const AppProvider = ({ children }) => {
       updateSettings,
       logout,
       firebaseActive,
+      backendActive,
       setNotifications,
       payouts,
       activeChatMessages,

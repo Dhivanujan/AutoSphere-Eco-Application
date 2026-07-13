@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
   },
   radiusVal: {
     fontSize: 15,
-    fontWeight: '850',
+    fontWeight: '800',
     color: colors.primary,
   },
   subtitle: {
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   },
   liveTitle: {
     fontSize: 14,
-    fontWeight: '750',
+    fontWeight: '700',
     color: colors.secondary,
   }
 });

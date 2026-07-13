@@ -62,7 +62,7 @@ export default function RequestListScreen() {
             <Text style={styles.lockIcon}>🔒</Text>
             <Text style={styles.lockTextTitle}>Verification Required</Text>
             <Text style={styles.lockTextDesc}>
-              Your account status is currently {documents.status.toUpperCase()}. You will be able to access the customer requests queue once approved.
+              Your account status is currently {(documents.status || 'Pending').toUpperCase()}. You will be able to access the customer requests queue once approved.
             </Text>
             <TouchableOpacity 
               style={[globalStyles.btnSecondary, { marginTop: 15 }]}
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   },
   customerName: {
     fontSize: 16,
-    fontWeight: '750',
+    fontWeight: '700',
     color: colors.secondary,
   },
   serviceDetails: {

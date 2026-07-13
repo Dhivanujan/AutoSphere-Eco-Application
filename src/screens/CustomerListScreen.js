@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   },
   custName: {
     fontSize: 15,
-    fontWeight: '750',
+    fontWeight: '700',
     color: colors.secondary,
   },
   custPhone: {

@@ -74,7 +74,7 @@ export default function DashboardScreen() {
   const totalRequestsCount = requests.filter(r => r.type === providerType).length;
   
   // Calculate average rating
-  const averageRating = (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1);
+  const averageRating = reviews.length > 0 ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1) : '5.0';
   
   // Notification badge count
   const unreadNotifications = notifications.filter(n => !n.read).length;
@@ -311,7 +311,7 @@ export default function DashboardScreen() {
             <Text style={styles.lockIcon}>🔒</Text>
             <Text style={styles.lockTitle}>Verification Required</Text>
             <Text style={styles.lockText}>
-              Your account status is currently <Text style={styles.lockStatusText}>{documents.status.toUpperCase()}</Text>.
+              Your account status is currently <Text style={styles.lockStatusText}>{(documents.status || 'Pending').toUpperCase()}</Text>.
               You cannot receive customer requests until your document verification is approved.
             </Text>
             <TouchableOpacity 
@@ -715,7 +715,7 @@ const styles = StyleSheet.create({
   },
   reqCustomerName: {
     fontSize: 14,
-    fontWeight: '750',
+    fontWeight: '700',
     color: colors.secondary,
   },
   reqDetails: {

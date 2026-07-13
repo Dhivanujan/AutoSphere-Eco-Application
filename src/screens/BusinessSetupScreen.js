@@ -5,7 +5,7 @@ import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
 
 export default function BusinessSetupScreen() {
-  const { providerType, profile, saveBusinessProfile, setCurrentScreen, uploadProfilePhoto, uploadBusinessLogo } = useApp();
+  const { providerType, profile, saveBusinessProfile, setCurrentScreen, uploadProfilePhoto, uploadBusinessLogo, documents } = useApp();
 
   // Determine if it is a Business vs Individual Provider
   const isBusiness = [
@@ -25,7 +25,7 @@ export default function BusinessSetupScreen() {
   const [businessName, setBusinessName] = useState(profile.businessName || '');
   const [address, setAddress] = useState(profile.address || '');
   const [workingHours, setWorkingHours] = useState(profile.workingHours || '08:00 AM - 06:00 PM');
-  const [serviceRadius, setServiceRadius] = useState(profile.serviceRadius.toString());
+  const [serviceRadius, setServiceRadius] = useState((profile.serviceRadius !== undefined && profile.serviceRadius !== null) ? profile.serviceRadius.toString() : '10');
   const [serviceArea, setServiceArea] = useState(profile.serviceArea || '');
   const [error, setError] = useState('');
 
@@ -102,7 +102,7 @@ export default function BusinessSetupScreen() {
   return (
     <SafeAreaView style={globalStyles.safeArea}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen('TYPE_SELECTION')}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => setCurrentScreen(documents?.status === 'Approved' ? 'SETTINGS' : 'TYPE_SELECTION')}>
           <Text style={styles.backBtnText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Profile Setup</Text>

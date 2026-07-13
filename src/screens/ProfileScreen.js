@@ -339,14 +339,14 @@ const styles = StyleSheet.create({
   },
   bannerName: {
     fontSize: 18,
-    fontWeight: '750',
+    fontWeight: '700',
     color: colors.textWhite,
   },
   bannerRole: {
     fontSize: 12,
     color: colors.textLight,
     marginTop: 4,
-    fontWeight: '650',
+    fontWeight: '600',
   },
   formCard: {
     backgroundColor: colors.card,
