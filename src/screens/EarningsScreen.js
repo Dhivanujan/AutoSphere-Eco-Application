@@ -164,11 +164,11 @@ export default function EarningsScreen() {
           
           {earnings.history && earnings.history.map((tx) => (
             <View key={tx.id} style={styles.txRow}>
-              <View>
+              <View style={{ flex: 1, marginRight: 16 }}>
                 <Text style={styles.txTitle}>{tx.title}</Text>
                 <Text style={styles.txDate}>{tx.date}</Text>
               </View>
-              <View style={{ alignItems: 'flex-end' }}>
+              <View style={{ alignItems: 'flex-end', justifyContent: 'center' }}>
                 <Text style={[styles.txAmount, tx.amount < 0 ? styles.txNegative : null]}>
                   {tx.amount > 0 ? `+${formatCurrency(tx.amount)}` : `-${formatCurrency(Math.abs(tx.amount))}`}
                 </Text>
@@ -310,6 +310,7 @@ const styles = StyleSheet.create({
   txRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
