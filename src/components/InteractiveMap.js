@@ -64,6 +64,7 @@ export default function InteractiveMap({ latitude, longitude, height = 140, labe
 
 const styles = StyleSheet.create({
   container: {
+    width: '100%',
     borderRadius: 10,
     overflow: 'hidden',
     backgroundColor: '#E2E8F0',

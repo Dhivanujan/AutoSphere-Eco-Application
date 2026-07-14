@@ -114,7 +114,7 @@ export default function LocationScreen() {
         <View style={globalStyles.card}>
           <Text style={styles.cardHeader}>🗺️ Active Dispatch Map</Text>
           <View style={styles.mapArea}>
-            <InteractiveMap latitude={location.latitude} longitude={location.longitude} />
+            <InteractiveMap latitude={location.latitude} longitude={location.longitude} height={180} />
           </View>
           <TouchableOpacity style={[globalStyles.btnSecondary, { marginTop: 12 }]} onPress={handleSimulateGPS}>
             <Text style={globalStyles.btnSecondaryText}>Recalibrate GPS Coordinates</Text>
@@ -227,36 +227,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   mapArea: {
-    height: 180,
-    backgroundColor: '#E2E8F0',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  mapEmoji: {
-    fontSize: 32,
-    zIndex: 10,
-  },
-  coordinates: {
-    fontSize: 11,
-    fontFamily: 'monospace',
-    color: colors.textLight,
-    position: 'absolute',
-    bottom: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    borderRadius: 4,
-  },
-  radiusCircle: {
-    position: 'absolute',
-    borderWidth: 2,
-    borderColor: 'rgba(249, 115, 22, 0.4)',
-    backgroundColor: 'rgba(249, 115, 22, 0.08)',
+    marginTop: 6,
   },
   rowBetween: {
     flexDirection: 'row',

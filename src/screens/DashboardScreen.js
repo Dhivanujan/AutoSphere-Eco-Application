@@ -77,7 +77,7 @@ export default function DashboardScreen() {
           </Text>
         </View>
         <View style={styles.mapMock}>
-          <InteractiveMap latitude={location.latitude} longitude={location.longitude} />
+          <InteractiveMap latitude={location.latitude} longitude={location.longitude} height={120} />
         </View>
         <TouchableOpacity 
           style={[globalStyles.btnSecondary, { marginTop: 12 }]}
@@ -530,27 +530,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   mapMock: {
-    height: 120,
-    backgroundColor: '#E2E8F0',
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-  },
-  mapIcon: {
-    fontSize: 32,
-    marginBottom: 5,
-  },
-  mapText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.secondary,
-  },
-  mapSubtext: {
-    fontSize: 10,
-    color: colors.textLight,
-    marginTop: 2,
+    marginTop: 6,
   },
   appointmentBox: {
     flexDirection: 'row',
