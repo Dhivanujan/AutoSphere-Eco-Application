@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 
 /**
- * BottomTabBar — Persistent 5-tab navigation bar.
+ * BottomTabBar — Persistent 5-tab navigation bar with professional vector icons.
  *
  * Tabs: Home | Requests | Earnings | Notifications | Profile
  *
@@ -11,40 +12,34 @@ import { colors } from '../theme/colors';
  * @param {string}   props.currentScreen     Current active screen identifier
  * @param {Function} props.onNavigate        Called with screen name when a tab is tapped
  * @param {number}   [props.unreadCount=0]   Badge count for Notifications tab
- * @param {string}   [props.providerType]    Current provider type (for adaptive icons)
  */
-export default function BottomTabBar({ currentScreen, onNavigate, unreadCount = 0, providerType }) {
+export default function BottomTabBar({ currentScreen, onNavigate, unreadCount = 0 }) {
   const tabs = [
     {
       key: 'DASHBOARD',
-      label: 'Home',
-      icon: '🏠',
-      activeIcon: '🏡',
+      icon: 'home-outline',
+      activeIcon: 'home',
     },
     {
       key: 'REQUEST_LIST',
-      label: getRequestLabel(providerType),
-      icon: '📋',
-      activeIcon: '📥',
+      icon: 'document-text-outline',
+      activeIcon: 'document-text',
     },
     {
       key: 'EARNINGS',
-      label: 'Earnings',
-      icon: '💰',
-      activeIcon: '💳',
+      icon: 'wallet-outline',
+      activeIcon: 'wallet',
     },
     {
       key: 'NOTIFICATIONS',
-      label: 'Alerts',
-      icon: '🔔',
-      activeIcon: '🔔',
+      icon: 'notifications-outline',
+      activeIcon: 'notifications',
       badge: unreadCount,
     },
     {
       key: 'PROFILE',
-      label: 'Profile',
-      icon: '👤',
-      activeIcon: '👤',
+      icon: 'person-outline',
+      activeIcon: 'person',
     },
   ];
 
@@ -82,9 +77,11 @@ export default function BottomTabBar({ currentScreen, onNavigate, unreadCount = 
             accessibilityState={{ selected: isActive }}
           >
             <View style={styles.iconWrapper}>
-              <Text style={[styles.icon, isActive && styles.iconActive]}>
-                {isActive ? tab.activeIcon : tab.icon}
-              </Text>
+              <Ionicons
+                name={isActive ? tab.activeIcon : tab.icon}
+                size={22}
+                color={isActive ? colors.primary : 'rgba(255, 255, 255, 0.45)'}
+              />
               {tab.badge > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>
@@ -93,9 +90,6 @@ export default function BottomTabBar({ currentScreen, onNavigate, unreadCount = 
                 </View>
               )}
             </View>
-            <Text style={[styles.label, isActive && styles.labelActive]}>
-              {tab.label}
-            </Text>
             {isActive && <View style={styles.activeIndicator} />}
           </TouchableOpacity>
         );
@@ -104,36 +98,14 @@ export default function BottomTabBar({ currentScreen, onNavigate, unreadCount = 
   );
 }
 
-/** Returns a contextual label for the Requests tab based on provider type */
-function getRequestLabel(providerType) {
-  switch (providerType) {
-    case 'Garage':
-    case 'Service Station':
-    case 'Car Wash Service':
-      return 'Jobs';
-    case 'Spare Parts Seller':
-      return 'Orders';
-    case 'Taxi Driver':
-    case 'Taxi Company':
-    case 'Bus Operator':
-      return 'Rides';
-    case 'Vehicle Rental':
-      return 'Bookings';
-    case 'Parking Service':
-      return 'Slots';
-    default:
-      return 'Requests';
-  }
-}
-
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.secondary,
     flexDirection: 'row',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.08)',
-    paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 25 : 10,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 25 : 12,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -153,7 +125,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4,
+    paddingVertical: 6,
     position: 'relative',
     ...Platform.select({
       web: { cursor: 'pointer' },
@@ -161,31 +133,15 @@ const styles = StyleSheet.create({
   },
   iconWrapper: {
     position: 'relative',
-    marginBottom: 2,
-  },
-  icon: {
-    fontSize: 20,
-    opacity: 0.5,
-  },
-  iconActive: {
-    opacity: 1,
-  },
-  label: {
-    fontSize: 10,
-    color: colors.textLight,
-    fontWeight: '500',
-    fontFamily: Platform.OS === 'web' ? 'Plus Jakarta Sans, sans-serif' : 'System',
-  },
-  labelActive: {
-    color: colors.primary,
-    fontWeight: '700',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   activeIndicator: {
     position: 'absolute',
-    top: -8,
-    width: 20,
+    top: -10,
+    width: 24,
     height: 3,
-    borderRadius: 2,
+    borderRadius: 1.5,
     backgroundColor: colors.primary,
   },
   badge: {
