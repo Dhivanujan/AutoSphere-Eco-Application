@@ -76,113 +76,120 @@ export default function RegisterScreen() {
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-          <AnimatedScreen animation="fade">
-            <View style={styles.headerArea}>
-              <Text style={styles.title}>Get Started</Text>
-              <Text style={styles.subtitle}>Register your business to begin receiving customer requests</Text>
-            </View>
-
-            <View style={styles.formContainer}>
-              {error ? <Text style={styles.errorText}>{error}</Text> : null}
-              
-              <View style={globalStyles.inputGroup}>
-                <Text style={globalStyles.inputLabel}>Full Name</Text>
-                <TextInput
-                  style={globalStyles.input}
-                  placeholder="e.g. Alex Carter"
-                  placeholderTextColor={colors.textLight}
-                  value={name}
-                  onChangeText={setName}
-                  editable={!loading}
-                />
+          <View style={styles.responsiveWrapper}>
+            <AnimatedScreen animation="fade">
+              <View style={styles.headerArea}>
+                <Text style={styles.title}>Get Started</Text>
+                <Text style={styles.subtitle}>Register your business to begin receiving customer requests</Text>
               </View>
 
-              <View style={globalStyles.inputGroup}>
-                <Text style={globalStyles.inputLabel}>Email Address</Text>
-                <TextInput
-                  style={globalStyles.input}
-                  placeholder="e.g. alex@example.com"
-                  placeholderTextColor={colors.textLight}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  editable={!loading}
-                />
-              </View>
-
-              <View style={globalStyles.inputGroup}>
-                <Text style={globalStyles.inputLabel}>Phone Number</Text>
-                <TextInput
-                  style={globalStyles.input}
-                  placeholder="e.g. +94 77 123 4567"
-                  placeholderTextColor={colors.textLight}
-                  value={phone}
-                  onChangeText={setPhone}
-                  keyboardType="phone-pad"
-                  editable={!loading}
-                />
-              </View>
-
-              <View style={globalStyles.inputGroup}>
-                <Text style={globalStyles.inputLabel}>Password</Text>
-                <View style={styles.passwordRow}>
+              <View style={styles.formContainer}>
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                
+                <View style={globalStyles.inputGroup}>
+                  <Text style={globalStyles.inputLabel}>Full Name</Text>
                   <TextInput
-                    style={[globalStyles.input, { flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }]}
-                    placeholder="Minimum 6 characters"
+                    style={globalStyles.input}
+                    placeholder="e.g. Alex Carter"
                     placeholderTextColor={colors.textLight}
-                    secureTextEntry={!showPassword}
-                    value={password}
-                    onChangeText={setPassword}
+                    value={name}
+                    onChangeText={setName}
                     editable={!loading}
                   />
-                  <TouchableOpacity 
-                    style={styles.eyeBtn}
-                    onPress={() => setShowPassword(!showPassword)}
-                  >
-                    <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁️'}</Text>
+                </View>
+
+                <View style={globalStyles.inputGroup}>
+                  <Text style={globalStyles.inputLabel}>Email Address</Text>
+                  <TextInput
+                    style={globalStyles.input}
+                    placeholder="e.g. alex@example.com"
+                    placeholderTextColor={colors.textLight}
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    editable={!loading}
+                  />
+                </View>
+
+                <View style={globalStyles.inputGroup}>
+                  <Text style={globalStyles.inputLabel}>Phone Number</Text>
+                  <TextInput
+                    style={globalStyles.input}
+                    placeholder="e.g. +94 77 123 4567"
+                    placeholderTextColor={colors.textLight}
+                    value={phone}
+                    onChangeText={setPhone}
+                    keyboardType="phone-pad"
+                    editable={!loading}
+                  />
+                </View>
+
+                <View style={globalStyles.inputGroup}>
+                  <Text style={globalStyles.inputLabel}>Password</Text>
+                  <View style={styles.passwordRow}>
+                    <TextInput
+                      style={[globalStyles.input, { flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }]}
+                      placeholder="At least 6 characters"
+                      placeholderTextColor={colors.textLight}
+                      secureTextEntry={!showPassword}
+                      value={password}
+                      onChangeText={setPassword}
+                      editable={!loading}
+                    />
+                    <TouchableOpacity 
+                      style={styles.eyeBtn}
+                      onPress={() => setShowPassword(!showPassword)}
+                    >
+                      <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁️'}</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Password strength meter */}
+                  {password.length > 0 && (
+                    <View style={styles.strengthContainer}>
+                      <View style={styles.strengthTrack}>
+                        <View style={[styles.strengthFill, { backgroundColor: strength.color, width: strength.width }]} />
+                      </View>
+                      <Text style={[styles.strengthLabel, { color: strength.color }]}>{strength.label}</Text>
+                    </View>
+                  )}
+                </View>
+
+                <TouchableOpacity 
+                  style={styles.agreeRow} 
+                  onPress={() => setAgree(!agree)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.checkbox, agree ? styles.checkboxChecked : null]}>
+                    {agree && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                  <Text style={styles.agreeText}>
+                    I agree to the <Text style={styles.linkText}>Terms of Service</Text> and <Text style={styles.linkText}>Privacy Policy</Text>
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={[globalStyles.btnPrimary, loading && globalStyles.btnDisabled]} 
+                  onPress={handleRegister}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={globalStyles.btnPrimaryText}>Create Account</Text>
+                  )}
+                </TouchableOpacity>
+
+                <View style={styles.loginRow}>
+                  <Text style={styles.hasAccountText}>Already have an account? </Text>
+                  <TouchableOpacity onPress={() => setCurrentScreen('LOGIN')}>
+                    <Text style={styles.loginLink}>Log In</Text>
                   </TouchableOpacity>
                 </View>
-                {password.length > 0 && (
-                  <View style={styles.strengthContainer}>
-                    <View style={styles.strengthTrack}>
-                      <View style={[styles.strengthFill, { width: strength.width, backgroundColor: strength.color }]} />
-                    </View>
-                    <Text style={[styles.strengthLabel, { color: strength.color }]}>{strength.label}</Text>
-                  </View>
-                )}
               </View>
-
-              {/* Terms and conditions toggle */}
-              <TouchableOpacity style={styles.agreeRow} onPress={() => setAgree(!agree)}>
-                <View style={[styles.checkbox, agree ? styles.checkboxChecked : null]}>
-                  {agree ? <Text style={styles.checkmark}>✓</Text> : null}
-                </View>
-                <Text style={styles.agreeText}>
-                  I agree to the <Text style={styles.linkText}>Terms of Service</Text> and <Text style={styles.linkText}>Privacy Policy</Text>
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={[globalStyles.btnPrimary, loading && globalStyles.btnDisabled]} 
-                onPress={handleRegister}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={globalStyles.btnPrimaryText}>Create Account</Text>
-                )}
-              </TouchableOpacity>
-
-              <View style={styles.loginRow}>
-                <Text style={styles.hasAccountText}>Already have an account? </Text>
-                <TouchableOpacity onPress={() => setCurrentScreen('LOGIN')}>
-                  <Text style={styles.loginLink}>Log In</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </AnimatedScreen>
+            </AnimatedScreen>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -198,6 +205,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
     justifyContent: 'center',
+  },
+  responsiveWrapper: {
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
   },
   headerArea: {
     marginBottom: 20,

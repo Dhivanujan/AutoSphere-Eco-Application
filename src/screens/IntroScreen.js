@@ -88,63 +88,65 @@ export default function IntroScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <AnimatedScreen animation="fade">
-        <View style={{ flex: 1, justifyContent: 'space-between' }}>
-          {/* Progress Bar */}
-          <View style={styles.progressBarContainer}>
-            <Animated.View
-              style={[
-                styles.progressBarFill,
-                {
-                  width: progressAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ['0%', '100%'],
-                  }),
-                },
-              ]}
-            />
-          </View>
-
-          <View style={styles.skipContainer}>
-            {activeSlide < slides.length - 1 ? (
-              <TouchableOpacity onPress={handleSkip}>
-                <Text style={styles.skipText}>Skip</Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={{ height: 20 }} />
-            )}
-          </View>
-
-          {/* Main Slide Carousel Area with transition */}
-          <Animated.View style={[styles.slideArea, { opacity: slideOpacity, transform: [{ translateY: slideTranslateY }] }]}>
-            <Text style={styles.slideIcon}>{slides[activeSlide].icon}</Text>
-            <Text style={styles.slideTitle}>{slides[activeSlide].title}</Text>
-            <Text style={styles.slideDescription}>{slides[activeSlide].description}</Text>
-          </Animated.View>
-
-          {/* Slide Indicators */}
-          <View style={styles.indicatorContainer}>
-            {slides.map((_, index) => (
-              <View
-                key={index}
+      <View style={styles.responsiveWrapper}>
+        <AnimatedScreen animation="fade">
+          <View style={{ flex: 1, justifyContent: 'space-between' }}>
+            {/* Progress Bar */}
+            <View style={styles.progressBarContainer}>
+              <Animated.View
                 style={[
-                  styles.indicator,
-                  activeSlide === index ? styles.indicatorActive : null
+                  styles.progressBarFill,
+                  {
+                    width: progressAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0%', '100%'],
+                    }),
+                  },
                 ]}
               />
-            ))}
-          </View>
+            </View>
 
-          {/* Bottom Actions */}
-          <View style={styles.footer}>
-            <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-              <Text style={styles.nextButtonText}>
-                {activeSlide === slides.length - 1 ? 'Get Started' : 'Next'}
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.skipContainer}>
+              {activeSlide < slides.length - 1 ? (
+                <TouchableOpacity onPress={handleSkip}>
+                  <Text style={styles.skipText}>Skip</Text>
+                </TouchableOpacity>
+              ) : (
+                <View style={{ height: 20 }} />
+              )}
+            </View>
+
+            {/* Main Slide Carousel Area with transition */}
+            <Animated.View style={[styles.slideArea, { opacity: slideOpacity, transform: [{ translateY: slideTranslateY }] }]}>
+              <Text style={styles.slideIcon}>{slides[activeSlide].icon}</Text>
+              <Text style={styles.slideTitle}>{slides[activeSlide].title}</Text>
+              <Text style={styles.slideDescription}>{slides[activeSlide].description}</Text>
+            </Animated.View>
+
+            {/* Slide Indicators */}
+            <View style={styles.indicatorContainer}>
+              {slides.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.indicator,
+                    activeSlide === index ? styles.indicatorActive : null
+                  ]}
+                />
+              ))}
+            </View>
+
+            {/* Bottom Actions */}
+            <View style={styles.footer}>
+              <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+                <Text style={styles.nextButtonText}>
+                  {activeSlide === slides.length - 1 ? 'Get Started' : 'Next'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </AnimatedScreen>
+        </AnimatedScreen>
+      </View>
     </SafeAreaView>
   );
 }
@@ -153,6 +155,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  responsiveWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
     paddingHorizontal: 20,
     justifyContent: 'space-between',
   },

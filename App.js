@@ -113,6 +113,7 @@ function DevToolsOverlay() {
     providerType, 
     setProviderType, 
     documents,
+    setDocuments,
     firebaseActive,
     backendActive
   } = useApp();
@@ -149,43 +150,38 @@ function DevToolsOverlay() {
   };
 
   const setVerification = async (statusValue) => {
+    const updatedDocs = {
+      ...documents,
+      status: statusValue,
+      reviewNotes: statusValue === 'Rejected' 
+        ? 'Identity card photo was blur/unreadable.' 
+        : 'Approved successfully.'
+    };
+
     // Get current session/profile details to update verification
     const uid = currentUser?.uid;
     if (uid) {
       try {
-        const reviewNotes = statusValue === 'Rejected' 
-          ? 'Identity card photo was blur/unreadable.' 
-          : 'Approved successfully.';
-        
-        await api.profile.updateProfile(uid, {
-          documents: {
-            ...documents,
-            status: statusValue,
-            reviewNotes: reviewNotes
-          }
-        });
-
-        // If approved, trigger notification
-        if (statusValue === 'Approved') {
-          // Add system notification via API
-          if (firebaseActive) {
-            // Note: Since firebase is active, it will write directly.
-            // But we can add a notification for the user.
-          }
-        }
+        await api.profile.updateProfile(uid, { documents: updatedDocs });
         alert(`Verification status updated to: ${statusValue}`);
       } catch (err) {
         alert('Failed to update verification: ' + err.message);
       }
     } else {
-      alert('No user is currently logged in. Register/Login first.');
+      setDocuments(updatedDocs);
+      alert(`Verification status updated to: ${statusValue} (local)`);
     }
   };
+
+  const showTabBar = ![
+    'SPLASH', 'INTRO', 'LOGIN', 'REGISTER', 'OTP',
+    'TYPE_SELECTION', 'BUSINESS_SETUP', 'DOCUMENT_UPLOAD', 'VERIFICATION_STATUS'
+  ].includes(currentScreen);
 
   if (!isOpen) {
     return (
       <TouchableOpacity 
-        style={styles.floatingBubble}
+        style={[styles.floatingBubble, { bottom: showTabBar ? 85 : 24 }]}
         onPress={() => setIsOpen(true)}
       >
         <Text style={styles.bubbleIcon}>🛠️</Text>
@@ -298,7 +294,6 @@ export default function App() {
     <AppProvider>
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         <RootNavigator />
-        <DevToolsOverlay />
       </View>
     </AppProvider>
   );

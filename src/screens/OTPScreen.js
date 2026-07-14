@@ -49,46 +49,48 @@ export default function OTPScreen() {
         style={{ flex: 1, justifyContent: 'center' }}
       >
         <AnimatedScreen animation="fade">
-          <View style={styles.content}>
-            <View style={styles.headerArea}>
-              <Text style={styles.otpIcon}>📱</Text>
-              <Text style={styles.title}>OTP Verification</Text>
-              <Text style={styles.subtitle}>
-                We sent a 4-digit verification code to your phone number: {'\n'}
-                <Text style={styles.phoneNumber}>{profile.phone || '+94 77 789 0123'}</Text>
-              </Text>
-            </View>
-
-            <View style={styles.card}>
-              {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-              <View style={styles.otpInputContainer}>
-                {/* For mock prototype, single input styled like digits is clean and works across web/mobile */}
-                <TextInput
-                  style={styles.otpInput}
-                  keyboardType="number-pad"
-                  maxLength={4}
-                  value={code}
-                  onChangeText={setCode}
-                  placeholder="0000"
-                  placeholderTextColor="rgba(15, 23, 42, 0.15)"
-                  autoFocus
-                />
+          <View style={styles.responsiveWrapper}>
+            <View style={styles.content}>
+              <View style={styles.headerArea}>
+                <Text style={styles.otpIcon}>📱</Text>
+                <Text style={styles.title}>OTP Verification</Text>
+                <Text style={styles.subtitle}>
+                  We sent a 4-digit verification code to your phone number: {'\n'}
+                  <Text style={styles.phoneNumber}>{profile.phone || '+94 77 789 0123'}</Text>
+                </Text>
               </View>
 
-              <Text style={styles.hintText}>Demo code is "1234" or any 4 digits</Text>
+              <View style={styles.card}>
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-              <TouchableOpacity style={globalStyles.btnPrimary} onPress={handleVerify}>
-                <Text style={globalStyles.btnPrimaryText}>Verify & Continue</Text>
-              </TouchableOpacity>
+                <View style={styles.otpInputContainer}>
+                  {/* For mock prototype, single input styled like digits is clean and works across web/mobile */}
+                  <TextInput
+                    style={styles.otpInput}
+                    keyboardType="number-pad"
+                    maxLength={4}
+                    value={code}
+                    onChangeText={setCode}
+                    placeholder="0000"
+                    placeholderTextColor="rgba(15, 23, 42, 0.15)"
+                    autoFocus
+                  />
+                </View>
 
-              <View style={styles.resendRow}>
-                <Text style={styles.resendLabel}>Didn't receive the code? </Text>
-                <TouchableOpacity onPress={handleResend} disabled={timer > 0}>
-                  <Text style={[styles.resendLink, timer > 0 ? styles.resendDisabled : null]}>
-                    {timer > 0 ? `Resend in ${timer}s` : 'Resend Code'}
-                  </Text>
+                <Text style={styles.hintText}>Demo code is "1234" or any 4 digits</Text>
+
+                <TouchableOpacity style={globalStyles.btnPrimary} onPress={handleVerify}>
+                  <Text style={globalStyles.btnPrimaryText}>Verify & Continue</Text>
                 </TouchableOpacity>
+
+                <View style={styles.resendRow}>
+                  <Text style={styles.resendLabel}>Didn't receive the code? </Text>
+                  <TouchableOpacity onPress={handleResend} disabled={timer > 0}>
+                    <Text style={[styles.resendLink, timer > 0 ? styles.resendDisabled : null]}>
+                      {timer > 0 ? `Resend in ${timer}s` : 'Resend Code'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </View>
@@ -102,6 +104,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  responsiveWrapper: {
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
   },
   content: {
     padding: 24,

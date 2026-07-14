@@ -45,80 +45,82 @@ export default function LoginScreen() {
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-          <AnimatedScreen animation="fade">
-            <View style={styles.headerArea}>
-              <Image 
-                source={require('../assets/logo.png')} 
-                style={styles.logoImage} 
-                resizeMode="contain"
-              />
-              <Text style={styles.title}>Welcome Back</Text>
-              <Text style={styles.subtitle}>Log in to manage your digital vehicle services</Text>
-            </View>
-
-            <View style={styles.formContainer}>
-              {error ? <Text style={styles.errorText}>{error}</Text> : null}
-              
-              <View style={globalStyles.inputGroup}>
-                <Text style={globalStyles.inputLabel}>Email or Phone Number</Text>
-                <TextInput
-                  style={globalStyles.input}
-                  placeholder="Enter email or phone"
-                  placeholderTextColor={colors.textLight}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  editable={!loading}
+          <View style={styles.responsiveWrapper}>
+            <AnimatedScreen animation="fade">
+              <View style={styles.headerArea}>
+                <Image 
+                  source={require('../assets/logo.png')} 
+                  style={styles.logoImage} 
+                  resizeMode="contain"
                 />
+                <Text style={styles.title}>Welcome Back</Text>
+                <Text style={styles.subtitle}>Log in to manage your digital vehicle services</Text>
               </View>
 
-              <View style={globalStyles.inputGroup}>
-                <View style={styles.labelRow}>
-                  <Text style={globalStyles.inputLabel}>Password</Text>
-                  <TouchableOpacity onPress={handleForgotPassword}>
-                    <Text style={styles.forgotText}>Forgot?</Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.passwordRow}>
+              <View style={styles.formContainer}>
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                
+                <View style={globalStyles.inputGroup}>
+                  <Text style={globalStyles.inputLabel}>Email or Phone Number</Text>
                   <TextInput
-                    style={[globalStyles.input, { flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }]}
-                    placeholder="Enter password"
+                    style={globalStyles.input}
+                    placeholder="Enter email or phone"
                     placeholderTextColor={colors.textLight}
-                    secureTextEntry={!showPassword}
-                    value={password}
-                    onChangeText={setPassword}
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
                     editable={!loading}
                   />
-                  <TouchableOpacity 
-                    style={styles.eyeBtn}
-                    onPress={() => setShowPassword(!showPassword)}
-                  >
-                    <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁️'}</Text>
+                </View>
+
+                <View style={globalStyles.inputGroup}>
+                  <View style={styles.labelRow}>
+                    <Text style={globalStyles.inputLabel}>Password</Text>
+                    <TouchableOpacity onPress={handleForgotPassword}>
+                      <Text style={styles.forgotText}>Forgot?</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.passwordRow}>
+                    <TextInput
+                      style={[globalStyles.input, { flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }]}
+                      placeholder="Enter password"
+                      placeholderTextColor={colors.textLight}
+                      secureTextEntry={!showPassword}
+                      value={password}
+                      onChangeText={setPassword}
+                      editable={!loading}
+                    />
+                    <TouchableOpacity 
+                      style={styles.eyeBtn}
+                      onPress={() => setShowPassword(!showPassword)}
+                    >
+                      <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁️'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <TouchableOpacity 
+                  style={[globalStyles.btnPrimary, loading && globalStyles.btnDisabled]} 
+                  onPress={handleLogin}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={globalStyles.btnPrimaryText}>Log In</Text>
+                  )}
+                </TouchableOpacity>
+
+                <View style={styles.registerRow}>
+                  <Text style={styles.noAccountText}>Don't have an account? </Text>
+                  <TouchableOpacity onPress={() => setCurrentScreen('REGISTER')}>
+                    <Text style={styles.registerLink}>Sign Up</Text>
                   </TouchableOpacity>
                 </View>
               </View>
-
-              <TouchableOpacity 
-                style={[globalStyles.btnPrimary, loading && globalStyles.btnDisabled]} 
-                onPress={handleLogin}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={globalStyles.btnPrimaryText}>Log In</Text>
-                )}
-              </TouchableOpacity>
-
-              <View style={styles.registerRow}>
-                <Text style={styles.noAccountText}>Don't have an account? </Text>
-                <TouchableOpacity onPress={() => setCurrentScreen('REGISTER')}>
-                  <Text style={styles.registerLink}>Sign Up</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </AnimatedScreen>
+            </AnimatedScreen>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -134,6 +136,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
     justifyContent: 'center',
+  },
+  responsiveWrapper: {
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
   },
   headerArea: {
     marginBottom: 30,
