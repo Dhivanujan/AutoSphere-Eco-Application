@@ -1,26 +1,57 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Animated, Image, ActivityIndicator, Easing } from 'react-native';
 import { colors } from '../theme/colors';
 import { useApp } from '../services/AppContext';
 
 export default function SplashScreen() {
   const { setCurrentScreen } = useApp();
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const scaleAnim = useRef(new Animated.Value(0.5)).current;
+  const glowAnim = useRef(new Animated.Value(0.3)).current;
+  const footerFadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // Main logo entrance animations
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 1000,
         useNativeDriver: true,
       }),
-      Animated.timing(scaleAnim, {
+      // Spring easing for a bouncier scale feel
+      Animated.spring(scaleAnim, {
         toValue: 1,
-        duration: 1000,
+        friction: 4,
+        tension: 40,
         useNativeDriver: true,
       }),
     ]).start();
+
+    // Pulsing glow animation on logo (loops continuously)
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 1200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0.3,
+          duration: 1200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    // Subtle delayed fade-in for footer text
+    Animated.timing(footerFadeAnim, {
+      toValue: 1,
+      duration: 800,
+      delay: 1200,
+      useNativeDriver: true,
+    }).start();
 
     // Auto navigate after 2.5 seconds
     const timer = setTimeout(() => {
@@ -33,6 +64,8 @@ export default function SplashScreen() {
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.logoContainer, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
+        {/* Pulsing glow behind the logo */}
+        <Animated.View style={[styles.logoGlow, { opacity: glowAnim }]} />
         <Image 
           source={require('../assets/logo.png')} 
           style={styles.logoImage} 
@@ -41,11 +74,11 @@ export default function SplashScreen() {
         <Text style={styles.subtitle}>Partner & Provider Workspace</Text>
       </Animated.View>
 
-      <View style={styles.footer}>
+      <Animated.View style={[styles.footer, { opacity: footerFadeAnim }]}>
         <ActivityIndicator size="small" color={colors.primary} style={{ marginBottom: 20 }} />
         <Text style={styles.footerText}>Secure Digital Logistics Ecosystem</Text>
         <Text style={styles.versionText}>v1.0.0</Text>
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -61,6 +94,15 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     marginBottom: 60,
+  },
+  logoGlow: {
+    position: 'absolute',
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: colors.primary,
+    opacity: 0.3,
+    top: -10,
   },
   logoImage: {
     width: 260,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
@@ -7,17 +7,26 @@ import { AnimatedScreen } from '../components';
 
 export default function LoginScreen() {
   const { loginUser, setCurrentScreen } = useApp();
-  const [email, setEmail] = useState('alex.carter@autosphere.eco');
+  const [email, setEmail] = useState('roshan.ranasinghe@autosphere.eco');
   const [password, setPassword] = useState('password123');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       setError('Please fill in all fields.');
       return;
     }
     setError('');
-    loginUser(email, password);
+    setLoading(true);
+    try {
+      await loginUser(email, password);
+    } catch (e) {
+      // error handled in context
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleForgotPassword = () => {
@@ -60,6 +69,7 @@ export default function LoginScreen() {
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  editable={!loading}
                 />
               </View>
 
@@ -70,18 +80,35 @@ export default function LoginScreen() {
                     <Text style={styles.forgotText}>Forgot?</Text>
                   </TouchableOpacity>
                 </View>
-                <TextInput
-                  style={globalStyles.input}
-                  placeholder="Enter password"
-                  placeholderTextColor={colors.textLight}
-                  secureTextEntry
-                  value={password}
-                  onChangeText={setPassword}
-                />
+                <View style={styles.passwordRow}>
+                  <TextInput
+                    style={[globalStyles.input, { flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }]}
+                    placeholder="Enter password"
+                    placeholderTextColor={colors.textLight}
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={setPassword}
+                    editable={!loading}
+                  />
+                  <TouchableOpacity 
+                    style={styles.eyeBtn}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁️'}</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
 
-              <TouchableOpacity style={globalStyles.btnPrimary} onPress={handleLogin}>
-                <Text style={globalStyles.btnPrimaryText}>Log In</Text>
+              <TouchableOpacity 
+                style={[globalStyles.btnPrimary, loading && globalStyles.btnDisabled]} 
+                onPress={handleLogin}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={globalStyles.btnPrimaryText}>Log In</Text>
+                )}
               </TouchableOpacity>
 
               <View style={styles.registerRow}>
@@ -90,12 +117,6 @@ export default function LoginScreen() {
                   <Text style={styles.registerLink}>Sign Up</Text>
                 </TouchableOpacity>
               </View>
-            </View>
-
-            {/* Quick Demo Assist */}
-            <View style={styles.demoBox}>
-              <Text style={styles.demoTitle}>💡 Developer Demo Mode</Text>
-              <Text style={styles.demoText}>Press "Log In" to proceed to onboarding. Bypass registration or selection via the floating Dev Tools overlay at any time.</Text>
             </View>
           </AnimatedScreen>
         </ScrollView>
@@ -156,6 +177,25 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
+  passwordRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  eyeBtn: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderLeftWidth: 0,
+    borderColor: colors.border,
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  eyeIcon: {
+    fontSize: 18,
+  },
   errorText: {
     color: colors.danger,
     fontSize: 14,
@@ -176,24 +216,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 14,
   },
-  demoBox: {
-    marginTop: 30,
-    backgroundColor: 'rgba(249, 115, 22, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(249, 115, 22, 0.2)',
-    borderRadius: 10,
-    padding: 12,
-  },
-  demoTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.primary,
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
-  demoText: {
-    fontSize: 11,
-    color: colors.textLight,
-    lineHeight: 16,
-  }
 });

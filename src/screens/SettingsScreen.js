@@ -50,7 +50,7 @@ export default function SettingsScreen() {
           <Text style={styles.sectionHeader}>👤 Account Settings</Text>
           
           <TouchableOpacity style={styles.settingRow} onPress={() => setCurrentScreen('PROFILE')}>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={styles.settingTitle}>Profile Information</Text>
               <Text style={styles.settingDesc}>Modify owner name, profile picture, and login email.</Text>
             </View>
@@ -58,7 +58,7 @@ export default function SettingsScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingRow} onPress={() => setCurrentScreen('BUSINESS_SETUP')}>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={styles.settingTitle}>Business Operations Details</Text>
               <Text style={styles.settingDesc}>Update business logo, working hours, and service area details.</Text>
             </View>
@@ -128,8 +128,20 @@ export default function SettingsScreen() {
         <View style={globalStyles.card}>
           <Text style={styles.sectionHeader}>⚙️ App Preferences</Text>
           
+          <View style={styles.toggleRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.settingTitle}>Dark Mode</Text>
+              <Text style={styles.settingDesc}>Switch to a dark color scheme for reduced eye strain.</Text>
+            </View>
+            <Switch
+              value={settings.darkMode || false}
+              onValueChange={(val) => updateSettings('darkMode', val)}
+              trackColor={{ false: '#767577', true: colors.primary }}
+            />
+          </View>
+
           <TouchableOpacity style={styles.settingRow} onPress={handleLanguageChange}>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={styles.settingTitle}>System Language</Text>
               <Text style={styles.settingDesc}>Active Language: <Text style={{ fontWeight: 'bold', color: colors.primary }}>{settings.language}</Text></Text>
             </View>
@@ -137,11 +149,32 @@ export default function SettingsScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.settingRow} onPress={handleClearCache}>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={styles.settingTitle}>Clear Cache Storage</Text>
               <Text style={styles.settingDesc}>Wipe local document draft data and temporary images.</Text>
             </View>
           </TouchableOpacity>
+        </View>
+
+        {/* About Section */}
+        <View style={globalStyles.card}>
+          <Text style={styles.sectionHeader}>ℹ️ About AutoSphere</Text>
+          <Text style={styles.aboutText}>
+            AutoSphere Eco is a unified digital logistics platform connecting vehicle service providers with customers. 
+            From taxi drivers to garages, rental companies to emergency responders — one platform powers them all.
+          </Text>
+          <View style={styles.aboutRow}>
+            <Text style={styles.aboutLabel}>Platform</Text>
+            <Text style={styles.aboutValue}>React Native + Expo</Text>
+          </View>
+          <View style={styles.aboutRow}>
+            <Text style={styles.aboutLabel}>Developer</Text>
+            <Text style={styles.aboutValue}>AutoSphere Engineering</Text>
+          </View>
+          <View style={styles.aboutRow}>
+            <Text style={styles.aboutLabel}>License</Text>
+            <Text style={styles.aboutValue}>Proprietary</Text>
+          </View>
         </View>
 
         {/* Session / Safety */}
@@ -154,6 +187,12 @@ export default function SettingsScreen() {
             <Text style={styles.deactivateText}>Deactivate Partner Account</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Version Footer */}
+        <View style={styles.versionFooter}>
+          <Text style={styles.versionText}>AutoSphere Eco v1.0.0</Text>
+          <Text style={styles.versionSubText}>Built with React Native • Expo SDK 54</Text>
+        </View>
         </AnimatedScreen>
       </ScrollView>
     </SafeAreaView>
@@ -164,27 +203,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  header: {
-    height: 56,
-    backgroundColor: colors.secondary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 15,
-  },
-  backBtn: {
-    paddingVertical: 5,
-  },
-  backBtnText: {
-    color: colors.primary,
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  headerTitle: {
-    color: colors.textWhite,
-    fontSize: 18,
-    fontWeight: '700',
   },
   scrollContent: {
     padding: 16,
@@ -230,6 +248,30 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     fontWeight: 'bold',
   },
+  aboutText: {
+    fontSize: 13,
+    color: colors.textLight,
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  aboutRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  aboutLabel: {
+    fontSize: 13,
+    color: colors.textLight,
+    fontWeight: '600',
+  },
+  aboutValue: {
+    fontSize: 13,
+    color: colors.secondary,
+    fontWeight: '700',
+  },
   buttonContainer: {
     marginVertical: 16,
     alignItems: 'center',
@@ -246,5 +288,20 @@ const styles = StyleSheet.create({
     color: colors.danger,
     fontSize: 13,
     fontWeight: '700',
+  },
+  versionFooter: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    marginBottom: 10,
+  },
+  versionText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.textLight,
+  },
+  versionSubText: {
+    fontSize: 11,
+    color: 'rgba(148, 163, 184, 0.6)',
+    marginTop: 4,
   }
 });

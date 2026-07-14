@@ -6,7 +6,9 @@ import { useApp } from '../services/AppContext';
 import { ScreenHeader, AnimatedScreen, EmptyState } from '../components';
 
 export default function NotificationsScreen() {
-  const { notifications, markNotificationRead, clearAllNotifications, setCurrentScreen } = useApp();
+  const { notifications, markNotificationRead, markAllNotificationsRead, clearAllNotifications, setCurrentScreen } = useApp();
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleNotificationClick = (nt) => {
     markNotificationRead(nt.id);
@@ -28,12 +30,19 @@ export default function NotificationsScreen() {
   return (
     <SafeAreaView style={globalStyles.safeArea}>
       <ScreenHeader
-        title="Notifications"
+        title={`Notifications${unreadCount > 0 ? ` (${unreadCount})` : ''}`}
         backLabel="← Home"
         onBack={() => setCurrentScreen('DASHBOARD')}
         rightLabel={notifications.length > 0 ? "Clear All" : undefined}
         onRight={notifications.length > 0 ? clearAllNotifications : undefined}
       />
+
+      {/* Mark All Read bar */}
+      {unreadCount > 0 && (
+        <TouchableOpacity style={styles.markAllBar} onPress={markAllNotificationsRead}>
+          <Text style={styles.markAllText}>✓ Mark all {unreadCount} as read</Text>
+        </TouchableOpacity>
+      )}
 
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
         <AnimatedScreen animation="fade">
@@ -183,5 +192,18 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: colors.textLight,
     marginTop: 6,
+  },
+  markAllBar: {
+    backgroundColor: 'rgba(249, 115, 22, 0.06)',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(249, 115, 22, 0.12)',
+    alignItems: 'center',
+  },
+  markAllText: {
+    color: colors.primary,
+    fontSize: 13,
+    fontWeight: '700',
   }
 });

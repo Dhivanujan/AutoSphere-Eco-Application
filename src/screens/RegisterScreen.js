@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
@@ -13,8 +13,26 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [agree, setAgree] = useState(true);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleRegister = () => {
+  const getPasswordStrength = () => {
+    if (!password) return { label: '', color: 'transparent', width: '0%' };
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+    const score = (password.length >= 8 ? 1 : 0) + (hasUpper ? 1 : 0) + (hasLower ? 1 : 0) + (hasNumber ? 1 : 0) + (hasSpecial ? 1 : 0);
+    
+    if (password.length < 4) return { label: 'Too Short', color: colors.danger, width: '15%' };
+    if (score <= 2) return { label: 'Weak', color: colors.danger, width: '33%' };
+    if (score <= 3) return { label: 'Medium', color: colors.pending, width: '60%' };
+    return { label: 'Strong', color: colors.success, width: '100%' };
+  };
+
+  const strength = getPasswordStrength();
+
+  const handleRegister = async () => {
     if (!name || !email || !phone || !password) {
       setError('Please fill in all fields.');
       return;
@@ -27,12 +45,23 @@ export default function RegisterScreen() {
       setError('Please enter a valid phone number.');
       return;
     }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
     if (!agree) {
       setError('You must agree to the Terms of Service.');
       return;
     }
     setError('');
-    registerUser(name, email, phone, password);
+    setLoading(true);
+    try {
+      await registerUser(name, email, phone, password);
+    } catch (e) {
+      // handled in context
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -64,6 +93,7 @@ export default function RegisterScreen() {
                   placeholderTextColor={colors.textLight}
                   value={name}
                   onChangeText={setName}
+                  editable={!loading}
                 />
               </View>
 
@@ -77,6 +107,7 @@ export default function RegisterScreen() {
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  editable={!loading}
                 />
               </View>
 
@@ -89,19 +120,37 @@ export default function RegisterScreen() {
                   value={phone}
                   onChangeText={setPhone}
                   keyboardType="phone-pad"
+                  editable={!loading}
                 />
               </View>
 
               <View style={globalStyles.inputGroup}>
                 <Text style={globalStyles.inputLabel}>Password</Text>
-                <TextInput
-                  style={globalStyles.input}
-                  placeholder="Minimum 6 characters"
-                  placeholderTextColor={colors.textLight}
-                  secureTextEntry
-                  value={password}
-                  onChangeText={setPassword}
-                />
+                <View style={styles.passwordRow}>
+                  <TextInput
+                    style={[globalStyles.input, { flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }]}
+                    placeholder="Minimum 6 characters"
+                    placeholderTextColor={colors.textLight}
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={setPassword}
+                    editable={!loading}
+                  />
+                  <TouchableOpacity 
+                    style={styles.eyeBtn}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁️'}</Text>
+                  </TouchableOpacity>
+                </View>
+                {password.length > 0 && (
+                  <View style={styles.strengthContainer}>
+                    <View style={styles.strengthTrack}>
+                      <View style={[styles.strengthFill, { width: strength.width, backgroundColor: strength.color }]} />
+                    </View>
+                    <Text style={[styles.strengthLabel, { color: strength.color }]}>{strength.label}</Text>
+                  </View>
+                )}
               </View>
 
               {/* Terms and conditions toggle */}
@@ -114,8 +163,16 @@ export default function RegisterScreen() {
                 </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={globalStyles.btnPrimary} onPress={handleRegister}>
-                <Text style={globalStyles.btnPrimaryText}>Create Account</Text>
+              <TouchableOpacity 
+                style={[globalStyles.btnPrimary, loading && globalStyles.btnDisabled]} 
+                onPress={handleRegister}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={globalStyles.btnPrimaryText}>Create Account</Text>
+                )}
               </TouchableOpacity>
 
               <View style={styles.loginRow}>
@@ -146,11 +203,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignItems: 'center',
   },
-  logoImage: {
-    width: 220,
-    height: 110,
-    marginBottom: 10,
-  },
   title: {
     fontSize: 24,
     fontWeight: '800',
@@ -180,6 +232,46 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 10,
     fontWeight: '500',
+  },
+  passwordRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  eyeBtn: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderLeftWidth: 0,
+    borderColor: colors.border,
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  eyeIcon: {
+    fontSize: 18,
+  },
+  strengthContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  strengthTrack: {
+    flex: 1,
+    height: 4,
+    backgroundColor: colors.border,
+    borderRadius: 2,
+    marginRight: 10,
+    overflow: 'hidden',
+  },
+  strengthFill: {
+    height: 4,
+    borderRadius: 2,
+  },
+  strengthLabel: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   agreeRow: {
     flexDirection: 'row',

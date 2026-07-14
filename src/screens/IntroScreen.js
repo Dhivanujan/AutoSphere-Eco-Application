@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, Platform } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions, Platform, Animated, Easing } from 'react-native';
 import { colors } from '../theme/colors';
 import { useApp } from '../services/AppContext';
 import { AnimatedScreen } from '../components';
@@ -27,10 +27,56 @@ const slides = [
 export default function IntroScreen() {
   const { setCurrentScreen } = useApp();
   const [activeSlide, setActiveSlide] = useState(0);
+  const slideOpacity = useRef(new Animated.Value(1)).current;
+  const slideTranslateY = useRef(new Animated.Value(0)).current;
+  const progressAnim = useRef(new Animated.Value(1 / slides.length)).current;
+
+  // Animate progress bar when slide changes
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: (activeSlide + 1) / slides.length,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+  }, [activeSlide]);
+
+  const animateSlideTransition = (nextSlide) => {
+    // Fade out + slide up current content
+    Animated.parallel([
+      Animated.timing(slideOpacity, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideTranslateY, {
+        toValue: -20,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setActiveSlide(nextSlide);
+      // Reset position below and fade in
+      slideTranslateY.setValue(20);
+      Animated.parallel([
+        Animated.timing(slideOpacity, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideTranslateY, {
+          toValue: 0,
+          duration: 250,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  };
 
   const handleNext = () => {
     if (activeSlide < slides.length - 1) {
-      setActiveSlide(activeSlide + 1);
+      animateSlideTransition(activeSlide + 1);
     } else {
       setCurrentScreen('LOGIN');
     }
@@ -44,6 +90,21 @@ export default function IntroScreen() {
     <SafeAreaView style={styles.container}>
       <AnimatedScreen animation="fade">
         <View style={{ flex: 1, justifyContent: 'space-between' }}>
+          {/* Progress Bar */}
+          <View style={styles.progressBarContainer}>
+            <Animated.View
+              style={[
+                styles.progressBarFill,
+                {
+                  width: progressAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0%', '100%'],
+                  }),
+                },
+              ]}
+            />
+          </View>
+
           <View style={styles.skipContainer}>
             {activeSlide < slides.length - 1 ? (
               <TouchableOpacity onPress={handleSkip}>
@@ -54,12 +115,12 @@ export default function IntroScreen() {
             )}
           </View>
 
-          {/* Main Slide Carousel Area */}
-          <View style={styles.slideArea}>
+          {/* Main Slide Carousel Area with transition */}
+          <Animated.View style={[styles.slideArea, { opacity: slideOpacity, transform: [{ translateY: slideTranslateY }] }]}>
             <Text style={styles.slideIcon}>{slides[activeSlide].icon}</Text>
             <Text style={styles.slideTitle}>{slides[activeSlide].title}</Text>
             <Text style={styles.slideDescription}>{slides[activeSlide].description}</Text>
-          </View>
+          </Animated.View>
 
           {/* Slide Indicators */}
           <View style={styles.indicatorContainer}>
@@ -130,21 +191,35 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontFamily: Platform.OS === 'web' ? 'Plus Jakarta Sans, sans-serif' : 'System',
   },
+  progressBarContainer: {
+    height: 4,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 2,
+    marginHorizontal: 20,
+    marginTop: Platform.OS === 'android' ? 20 : 10,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 2,
+  },
   indicatorContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginBottom: 40,
   },
   indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#CBD5E1',
-    marginHorizontal: 4,
+    marginHorizontal: 5,
   },
   indicatorActive: {
     backgroundColor: colors.primary,
-    width: 24,
+    width: 28,
+    borderRadius: 5,
   },
   footer: {
     marginBottom: 30,

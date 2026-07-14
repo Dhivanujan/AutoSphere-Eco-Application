@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Platform, Linking, TextInput, Modal, FlatList, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Platform, Linking, TextInput, Modal, FlatList, KeyboardAvoidingView, Alert } from 'react-native';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
@@ -58,6 +58,29 @@ export default function RequestDetailsScreen() {
 
   const { id, customerName, customerPhone, serviceDetails, vehicleDetails, pickupLocation, dropoffLocation, time, notes, fare, status, history, partNumber } = selectedRequest;
 
+  // Progress stepper steps
+  const STEPS = ['Pending', 'Accepted', 'In Progress', 'Completed'];
+  const currentStepIndex = STEPS.indexOf(status === 'Cancelled' ? 'Pending' : status);
+
+  // Confirmation dialog helper — uses Alert on native, window.confirm on web
+  const confirmAction = (title, message, onConfirm) => {
+    if (Platform.OS === 'web') {
+      if (window.confirm(`${title}\n\n${message}`)) {
+        onConfirm();
+      }
+    } else {
+      Alert.alert(title, message, [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Confirm', onPress: onConfirm },
+      ]);
+    }
+  };
+
+  const handleAccept = () => confirmAction('Accept Job', `Are you sure you want to accept the job from ${customerName}?`, () => acceptRequest(id));
+  const handleReject = () => confirmAction('Decline Job', `Are you sure you want to decline the job from ${customerName}? This cannot be undone.`, () => rejectRequest(id));
+  const handleStart = () => confirmAction('Start Service', 'Are you sure you want to start this service job?', () => startService(id));
+  const handleComplete = () => confirmAction('Complete Job', 'Mark this job as completed? This will finalize the transaction.', () => completeService(id));
+
   const handleCall = () => {
     Linking.openURL(`tel:${customerPhone}`).catch(() => {
       alert(`Could not trigger phone call. Contact number: ${customerPhone}`);
@@ -87,6 +110,29 @@ export default function RequestDetailsScreen() {
 
       <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
         <AnimatedScreen animation="fade">
+          {/* Progress Stepper */}
+          <View style={styles.stepperContainer}>
+            {STEPS.map((step, index) => {
+              const isActive = index <= currentStepIndex;
+              const isCurrent = index === currentStepIndex;
+              return (
+                <React.Fragment key={step}>
+                  <View style={styles.stepItem}>
+                    <View style={[styles.stepCircle, isActive && styles.stepCircleActive, isCurrent && styles.stepCircleCurrent]}>
+                      <Text style={[styles.stepCircleText, isActive && styles.stepCircleTextActive]}>
+                        {isActive ? '✓' : index + 1}
+                      </Text>
+                    </View>
+                    <Text style={[styles.stepLabel, isActive && styles.stepLabelActive]}>{step}</Text>
+                  </View>
+                  {index < STEPS.length - 1 && (
+                    <View style={[styles.stepLine, isActive && styles.stepLineActive]} />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </View>
+
           {/* Status Card */}
           <View style={globalStyles.card}>
             <View style={styles.statusRow}>
@@ -195,15 +241,16 @@ export default function RequestDetailsScreen() {
             <View style={styles.buttonRow}>
               <TouchableOpacity 
                 style={[styles.actionBtn, styles.declineBtn]} 
-                onPress={() => rejectRequest(id)}
+                onPress={handleReject}
               >
-                <Text style={styles.declineBtnText}>Decline</Text>
+                <Text style={styles.declineBtnText}>✕  Decline</Text>
               </TouchableOpacity>
+              <View style={{ width: 12 }} />
               <TouchableOpacity 
                 style={[styles.actionBtn, styles.acceptBtn]} 
-                onPress={() => acceptRequest(id)}
+                onPress={handleAccept}
               >
-                <Text style={styles.acceptBtnText}>Accept Job</Text>
+                <Text style={styles.acceptBtnText}>✓  Accept Job</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -211,18 +258,18 @@ export default function RequestDetailsScreen() {
           {status === 'Accepted' && (
             <TouchableOpacity 
               style={[globalStyles.btnPrimary, styles.fullWidthBtn]} 
-              onPress={() => startService(id)}
+              onPress={handleStart}
             >
-              <Text style={globalStyles.btnPrimaryText}>Start Service Job</Text>
+              <Text style={globalStyles.btnPrimaryText}>🚀  Start Service Job</Text>
             </TouchableOpacity>
           )}
 
           {status === 'In Progress' && (
             <TouchableOpacity 
               style={[globalStyles.btnPrimary, { backgroundColor: colors.success }, styles.fullWidthBtn]} 
-              onPress={() => completeService(id)}
+              onPress={handleComplete}
             >
-              <Text style={globalStyles.btnPrimaryText}>Complete Service Job ✓</Text>
+              <Text style={globalStyles.btnPrimaryText}>✅  Complete Service Job</Text>
             </TouchableOpacity>
           )}
 
@@ -231,7 +278,7 @@ export default function RequestDetailsScreen() {
               style={[globalStyles.btnSecondary, styles.fullWidthBtn]} 
               onPress={() => setCurrentScreen('REQUEST_LIST')}
             >
-              <Text style={globalStyles.btnSecondaryText}>Return to Queue</Text>
+              <Text style={globalStyles.btnSecondaryText}>← Return to Queue</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -549,8 +596,70 @@ const styles = StyleSheet.create({
     color: colors.secondary,
     fontWeight: '600',
   },
+  stepperContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  stepItem: {
+    alignItems: 'center',
+  },
+  stepCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.background,
+    borderWidth: 2,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepCircleActive: {
+    backgroundColor: 'rgba(249, 115, 22, 0.12)',
+    borderColor: colors.primary,
+  },
+  stepCircleCurrent: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  stepCircleText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.textLight,
+  },
+  stepCircleTextActive: {
+    color: colors.primary,
+  },
+  stepLabel: {
+    fontSize: 8,
+    color: colors.textLight,
+    marginTop: 4,
+    fontWeight: '600',
+    textAlign: 'center',
+    maxWidth: 56,
+  },
+  stepLabelActive: {
+    color: colors.primary,
+    fontWeight: '700',
+  },
+  stepLine: {
+    width: 20,
+    height: 2,
+    backgroundColor: colors.border,
+    marginBottom: 14,
+    marginHorizontal: 2,
+  },
+  stepLineActive: {
+    backgroundColor: colors.primary,
+  },
   actionContainer: {
-    marginVertical: 10,
+    marginVertical: 14,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -558,11 +667,10 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     flex: 1,
-    paddingVertical: 15,
+    paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 5,
   },
   declineBtn: {
     backgroundColor: 'transparent',

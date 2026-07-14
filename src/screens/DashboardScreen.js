@@ -195,6 +195,9 @@ export default function DashboardScreen() {
             )}
           </View>
           <View>
+            <Text style={styles.greeting}>
+              {(() => { const h = new Date().getHours(); return h < 12 ? 'Good Morning' : h < 17 ? 'Good Afternoon' : 'Good Evening'; })()}
+            </Text>
             <Text style={styles.userName}>{profile.businessName || profile.fullName}</Text>
             <Text style={styles.userRole}>{providerType}</Text>
           </View>
@@ -216,9 +219,13 @@ export default function DashboardScreen() {
         <AnimatedScreen animation="fade">
           {/* Availability Quick Toggle Banner */}
           <View style={[styles.statusBanner, isOnline ? styles.bannerOnline : styles.bannerOffline]}>
-            <Text style={styles.bannerText}>
-              Status: <Text style={{ fontWeight: 'bold' }}>{isOnline ? 'ONLINE' : 'OFFLINE'}</Text>
-            </Text>
+            <View style={[styles.bannerAccent, { backgroundColor: isOnline ? colors.success : colors.danger }]} />
+            <View style={styles.bannerContent}>
+              <Text style={styles.bannerEmoji}>{isOnline ? '🟢' : '🔴'}</Text>
+              <Text style={styles.bannerText}>
+                Status: <Text style={{ fontWeight: 'bold' }}>{isOnline ? 'ONLINE' : 'OFFLINE'}</Text>
+              </Text>
+            </View>
             <TouchableOpacity 
               style={[styles.toggleBtn, isOnline ? styles.toggleBtnOnline : styles.toggleBtnOffline]}
               onPress={() => setIsOnline(!isOnline)}
@@ -228,6 +235,7 @@ export default function DashboardScreen() {
           </View>
 
           {/* Metrics Grid */}
+          <Text style={styles.quickStatsLabel}>📊 Quick Stats</Text>
           <View style={styles.metricsRow}>
             <MetricCard
               label="Earnings"
@@ -781,5 +789,38 @@ const styles = StyleSheet.create({
   lockStatusText: {
     color: colors.danger,
     fontWeight: '800',
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  greeting: {
+    fontSize: 11,
+    color: colors.textLight,
+    marginBottom: 1,
+  },
+  bannerAccent: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    borderTopLeftRadius: 12,
+    borderBottomLeftRadius: 12,
+  },
+  bannerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  bannerEmoji: {
+    fontSize: 12,
+    marginRight: 6,
+  },
+  quickStatsLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.secondary,
+    marginBottom: 8,
+    marginLeft: 2,
   }
 });

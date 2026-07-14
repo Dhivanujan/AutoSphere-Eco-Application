@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, SafeAreaView, Platform, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, SafeAreaView, Platform, Image, KeyboardAvoidingView } from 'react-native';
 import { colors } from '../theme/colors';
 import { globalStyles } from '../theme/styles';
 import { useApp } from '../services/AppContext';
@@ -108,7 +108,19 @@ export default function BusinessSetupScreen() {
         onBack={() => setCurrentScreen(documents?.status === 'Approved' ? 'SETTINGS' : 'TYPE_SELECTION')}
       />
 
-      <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent}>
+      {/* Step progress indicator */}
+      <View style={styles.stepIndicatorContainer}>
+        <View style={styles.stepIndicatorRow}>
+          <Text style={styles.stepIndicatorText}>Step 2 of 4</Text>
+          <Text style={styles.stepIndicatorLabel}>Profile Setup</Text>
+        </View>
+        <View style={styles.stepProgressBar}>
+          <View style={[styles.stepProgressFill, { width: '50%' }]} />
+        </View>
+      </View>
+
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <AnimatedScreen animation="fade">
         <View style={styles.badgeContainer}>
           <View style={styles.badge}>
@@ -189,6 +201,13 @@ export default function BusinessSetupScreen() {
             </View>
           </View>
 
+          {/* Section Divider: Contact Information */}
+          <View style={styles.sectionDivider}>
+            <View style={styles.sectionDividerLine} />
+            <Text style={styles.sectionDividerLabel}>📋 Contact Information</Text>
+            <View style={styles.sectionDividerLine} />
+          </View>
+
           {/* Common Fields */}
           <View style={globalStyles.inputGroup}>
             <Text style={globalStyles.inputLabel}>Full Name (Owner/Manager)</Text>
@@ -214,6 +233,12 @@ export default function BusinessSetupScreen() {
           {/* Business-Only Fields */}
           {isBusiness && (
             <>
+              {/* Section Divider: Business Details */}
+              <View style={styles.sectionDivider}>
+                <View style={styles.sectionDividerLine} />
+                <Text style={styles.sectionDividerLabel}>🏢 Business Details</Text>
+                <View style={styles.sectionDividerLine} />
+              </View>
               <View style={globalStyles.inputGroup}>
                 <Text style={globalStyles.inputLabel}>Registered Business Name</Text>
                 <TextInput
@@ -246,6 +271,13 @@ export default function BusinessSetupScreen() {
             </>
           )}
 
+          {/* Section Divider: Service Configuration */}
+          <View style={styles.sectionDivider}>
+            <View style={styles.sectionDividerLine} />
+            <Text style={styles.sectionDividerLabel}>⚙️ Service Configuration</Text>
+            <View style={styles.sectionDividerLine} />
+          </View>
+
           {/* Service Area Specifics */}
           <View style={globalStyles.inputGroup}>
             <Text style={globalStyles.inputLabel}>Service radius (in km)</Text>
@@ -274,6 +306,7 @@ export default function BusinessSetupScreen() {
         </View>
         </AnimatedScreen>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -303,6 +336,58 @@ const styles = StyleSheet.create({
     color: colors.textWhite,
     fontSize: 18,
     fontWeight: '700',
+  },
+  stepIndicatorContainer: {
+    backgroundColor: colors.card,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  stepIndicatorRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  stepIndicatorText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  stepIndicatorLabel: {
+    fontSize: 12,
+    color: colors.textLight,
+    fontWeight: '500',
+  },
+  stepProgressBar: {
+    height: 4,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  stepProgressFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 2,
+  },
+  sectionDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  sectionDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  sectionDividerLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.textLight,
+    paddingHorizontal: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   scrollContent: {
     padding: 20,

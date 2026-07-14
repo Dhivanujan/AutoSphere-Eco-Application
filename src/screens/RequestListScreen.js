@@ -35,10 +35,18 @@ export default function RequestListScreen() {
         onBack={() => setCurrentScreen('DASHBOARD')}
       />
 
-      {/* Tabs */}
+      {/* Tabs with count badges */}
       <View style={styles.tabContainer}>
         {['Pending', 'Active', 'History'].map(tab => {
           const isSelected = activeTab === tab;
+          // Calculate count for each tab
+          const tabCount = requests.filter(req => {
+            if (req.type !== providerType) return false;
+            if (tab === 'Pending') return req.status === 'Pending';
+            if (tab === 'Active') return req.status === 'Accepted' || req.status === 'In Progress';
+            return req.status === 'Completed' || req.status === 'Cancelled';
+          }).length;
+          const displayLabel = tab === 'History' ? 'Completed' : tab;
           return (
             <TouchableOpacity 
               key={tab} 
@@ -46,11 +54,16 @@ export default function RequestListScreen() {
               onPress={() => setActiveTab(tab)}
             >
               <Text style={[styles.tabText, isSelected ? styles.tabTextActive : null]}>
-                {tab === 'History' ? 'Completed' : tab}
+                {displayLabel} ({tabCount})
               </Text>
             </TouchableOpacity>
           );
         })}
+      </View>
+
+      {/* Pull-to-refresh hint */}
+      <View style={styles.refreshHint}>
+        <Text style={styles.refreshHintText}>↕ Pull down to refresh</Text>
       </View>
 
       {/* Requests List */}
@@ -120,27 +133,44 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: colors.secondary,
-    paddingBottom: 5,
+    paddingBottom: 6,
+    paddingHorizontal: 8,
+    paddingTop: 4,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
   tab: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 10,
     alignItems: 'center',
-    borderBottomWidth: 3,
+    borderRadius: 8,
+    marginHorizontal: 3,
+    backgroundColor: 'transparent',
+    borderBottomWidth: 2,
     borderBottomColor: 'transparent',
   },
   tabActive: {
+    backgroundColor: 'rgba(249, 115, 22, 0.12)',
     borderBottomColor: colors.primary,
   },
   tabText: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textLight,
     fontWeight: '600',
   },
   tabTextActive: {
     color: colors.primary,
+    fontWeight: '700',
+  },
+  refreshHint: {
+    alignItems: 'center',
+    paddingVertical: 6,
+    backgroundColor: colors.background,
+  },
+  refreshHintText: {
+    fontSize: 11,
+    color: colors.textLight,
+    fontStyle: 'italic',
   },
   scrollContent: {
     padding: 16,

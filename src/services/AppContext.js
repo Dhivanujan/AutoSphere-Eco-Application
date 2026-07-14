@@ -387,6 +387,17 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const markAllNotificationsRead = async () => {
+    if (currentUser) {
+      // Mark all notifications as read locally
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      // Persist to API
+      for (const n of notifications.filter(x => !x.read)) {
+        await api.notifications.markAsRead(n.id, currentUser.uid);
+      }
+    }
+  };
+
   const updateSettings = async (key, value) => {
     const updatedSettings = { ...settings, [key]: value };
     setSettings(updatedSettings);
@@ -463,6 +474,7 @@ export const AppProvider = ({ children }) => {
       startService,
       completeService,
       markNotificationRead,
+      markAllNotificationsRead,
       clearAllNotifications,
       updateSettings,
       logout,

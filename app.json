@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "autosphere-eco-app",
+    "name": "autosphere-eco",
     "slug": "autosphere-eco-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/icon.png",
+    "icon": "./src/assets/logo.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
